@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.0.0)
 project(EigenNeut)
 
 # compiler all *.cpp files in the source directory
-file(GLOB SOURCES "*.cpp")
+file(GLOB SOURCES "src/*.cpp")
 set(BIN_NAME eigenneut)
 add_executable(${BIN_NAME} ${SOURCES})
 # requirec c++11 standard

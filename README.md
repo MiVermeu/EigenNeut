@@ -4,7 +4,7 @@ Make art using neutrino oscillations! Heavily based on HackerPoet's [**Conics**]
 ## Key Bindings
 * Space Bar - Start neutrino drawing, play/pause dCP rotation.
 * Left/Right - Switch between electron, muon and tau neutrino.
-* Up/Down - Increment/decrement the dCP parameter
+* Up/Down - Increment/decrement the dCP parameter.
 * Escape - Exit the app.
 
 ## Building
