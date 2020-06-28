@@ -1,4 +1,5 @@
 #include "DrawUtil.h"
+#include <iostream>
 
 namespace DrawUtil {
 
@@ -32,11 +33,7 @@ TernaryGraph::TernaryGraph(sf::RenderWindow& window):
 
 // Function to transform a 3D vector into a 2D location on the ternary plot.
 sf::Vector2f TernaryGraph::TriPoint(float e, float mu, float tau) {
-  // Add vectors for the different components together until the right point is reached.
-  const sf::Vector2f edir = top-left;
-  const sf::Vector2f mudir = right-left;
-
-  return left + e*edir + mu*mudir;
+  return left + e*(top-left) + mu*(right-left);
 } // TernaryGraph::TriPoint()
 
 // Draw everything in class.
@@ -64,22 +61,27 @@ void TernaryGraph::draw() {
   window.draw(nulabelsprite[2]);
 
   // Draw all added drawings.
+  for(int di = 0; di < drawings.size(); ++di) {
+    std::vector<sf::Vertex>& drawing = drawings[di];
+    glLineWidth(5);
+    for(int i = 0; i < drawing.size(); ++i) {
+      // Normalise colours so there's always one out of rgb at 255.
+      double cmax = std::max(std::max(probs[di][i](0), probs[di][i](1)), probs[di][i](2));
+      drawing[i].color = sf::Color(255*probs[di][i](2)/cmax,
+                                   255*probs[di][i](0)/cmax,
+                                   255*probs[di][i](1)/cmax);
+    }
+    window.draw(drawing.data(), std::min((size_t)t*10,drawing.size()), sf::PrimitiveType::LineStrip);
+  }
   for(std::vector<sf::Vertex>& drawing : drawings) {
     glLineWidth(7);
-    // for(int i = 0; i < drawing.size(); ++i) {
-    //   drawing[i].color = sf::Color::Blue;
-    // }
+    // Make sure this line is drawn in white.
+    for(int i = 0; i < drawing.size(); ++i) {
+      drawing[i].color = sf::Color::White;
+    }
     const int start = int(t)%drawing.size();
     const int numvtx = std::min(10, (int)(drawing.size() - start));
     window.draw(drawing.data()+start, numvtx, sf::PrimitiveType::LineStrip);
-  }
-
-  for(std::vector<sf::Vertex>& drawing : drawings) {
-    glLineWidth(1);
-    // for(int i = 0; i < drawing.size(); ++i) {
-    //   drawing[i].color = sf::Color::Blue;
-    // }
-    window.draw(drawing.data(), std::min((size_t)t*10,drawing.size()), sf::PrimitiveType::LineStrip);
   }
 
 } // TernaryGraph::draw()
