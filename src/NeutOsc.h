@@ -7,11 +7,10 @@
 
 namespace neutosc {
 
-  std::complex<double> If(0,1);
+std::complex<double> If(0,1);
 
-class Oscillator {
-  private:
-	// Neutrino oscillation parameters.
+// A struct to hold neutrino oscillation parameters.
+struct OscPars {
   double th12 = 0.5843;
   double th23 = 0.738;
   double th13 = 0.148;
@@ -20,9 +19,21 @@ class Oscillator {
   double Dm32sq = Dm31sq-Dm21sq; // In eV^2
   double dCP = 1.38 * 3.14159265;
 
+  bool operator==(OscPars& other) const {
+    return th12 == other.th12 && th23 == other.th23 && th13 == other.th13 &&
+           Dm21sq == other.Dm21sq && Dm31sq == other.Dm31sq &&
+           Dm32sq == other.Dm32sq && dCP == other.dCP;
+  }
+  bool operator!=(OscPars& other) const { return !operator==(other); }
+};
+
+class Oscillator {
+  private:
+	// Neutrino oscillation parameter struct.
+  OscPars op;
+
   // Oscillation matrix.
   Eigen::Matrix3cd U;
-  Eigen::Matrix3cd Uinv;
   // Mass difference matrix.
   Eigen::Matrix3d Dmsq;
 
@@ -32,12 +43,12 @@ class Oscillator {
   } // Oscillator::Oscillator
 
   void update() {
-    const double s12 = sin(th12);
-    const double s23 = sin(th23);
-    const double s13 = sin(th13);
-    const double c12 = cos(th12);
-    const double c23 = cos(th23);
-    const double c13 = cos(th13);
+    const double s12 = sin(op.th12);
+    const double s23 = sin(op.th23);
+    const double s13 = sin(op.th13);
+    const double c12 = cos(op.th12);
+    const double c23 = cos(op.th23);
+    const double c13 = cos(op.th13);
 
     Eigen::Matrix3cd U1;
     U1 << 1, 0, 0,
@@ -45,9 +56,9 @@ class Oscillator {
           0, -s23, c23;
 
     Eigen::Matrix3cd U2;
-    U2 << c13, 0, s13*(cos(dCP)-If*sin(dCP)),
+    U2 << c13, 0, s13*(cos(op.dCP)-If*sin(op.dCP)),
           0, 1, 0,
-          -s13*(cos(dCP)+If*sin(dCP)), 0, c13;
+          -s13*(cos(op.dCP)+If*sin(op.dCP)), 0, c13;
 
     Eigen::Matrix3cd U3;
     U3 << c12, s12, 0,
@@ -55,27 +66,25 @@ class Oscillator {
           0, 0, 1;
 
     U = U1*U2*U3;
-    Uinv = U.inverse();
 
-    Dmsq << 0, -Dm21sq, -Dm31sq,
-         Dm21sq, 0, -Dm32sq,
-         Dm31sq, Dm32sq, 0;
+    Dmsq << 0, -op.Dm21sq, -op.Dm31sq,
+         op.Dm21sq, 0, -op.Dm32sq,
+         op.Dm31sq, op.Dm32sq, 0;
 
   } // Oscillator::update()
 
-  Eigen::Vector3d trans(int nu1, double E, double L, int ch = 1, double d = -10) {
-    if(d != -10 || d != dCP) {
-      dCP = d;
-      update();
-    }
+  // Expose the neutrino oscillation parameter set to mess with it.
+  OscPars& pars() { return op; }
+
+  Eigen::Vector3d trans(int nu1, double E, double L) {
     Eigen::Vector3d P(0,0,0);
     // P(nu1) += 1; // delta_nu1nu2
 
     for(int nu2 = 0; nu2 < 3; ++nu2) {
       P(nu2) += pow(abs(conj(U(nu1,0))*U(nu2,0)),2) + pow(abs(conj(U(nu1,1))*U(nu2,1)),2) + pow(abs(conj(U(nu1,2))*U(nu2,2)),2) +
-                2*(conj(U(nu1,0))*U(nu2,0)*U(nu1,1)*conj(U(nu2,1)) * exp(-If*2.54*Dm21sq*L/E)).real() +
-                2*(conj(U(nu1,0))*U(nu2,0)*U(nu1,2)*conj(U(nu2,2)) * exp(-If*2.54*Dm31sq*L/E)).real() +
-                2*(conj(U(nu1,1))*U(nu2,1)*U(nu1,2)*conj(U(nu2,2)) * exp(-If*2.54*Dm32sq*L/E)).real();
+                2*(conj(U(nu1,0))*U(nu2,0)*U(nu1,1)*conj(U(nu2,1)) * exp(-If*2.54*Dmsq(0,1)*L/E)).real() +
+                2*(conj(U(nu1,0))*U(nu2,0)*U(nu1,2)*conj(U(nu2,2)) * exp(-If*2.54*Dmsq(0,2)*L/E)).real() +
+                2*(conj(U(nu1,1))*U(nu2,1)*U(nu1,2)*conj(U(nu2,2)) * exp(-If*2.54*Dmsq(1,2)*L/E)).real();
     }
     
     // // "Simplified" version that does not work right now.

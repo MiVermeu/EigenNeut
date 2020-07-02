@@ -9,6 +9,7 @@
 
 #include "DrawUtil.h"
 #include "NeutOsc.h"
+#include "Slider.h"
 
 typedef std::vector<Eigen::Vector3d> NuPath;
 
@@ -46,42 +47,37 @@ int main(int argc, char *argv[]) {
   glEnable(GL_POINT_SMOOTH);
   glEnable(GL_SMOOTH);
   
-  // Create ternary graph class instance.
+  // Create ternary graph and oscillator class instances.
   DrawUtil::TernaryGraph tgraph(window);
   neutosc::Oscillator osc;
 
-  int numsteps = 300;
-  std::vector<std::vector<NuPath>> nu(3, std::vector<NuPath>(numsteps));
-  // If save file exists, try loading it.
-  bool loading = false;
-  std::ifstream ifile("savedata.dat");
-  std::ofstream ofile;
-  if(ifile.good()) {
-    loading = true;
-  } else {
-    ofile.open("savedata.dat");
-  }
-  for(int step = 0; step < numsteps; ++step) {
-    std::cout << step << '\n';
-    for(int i = 0; i < 23000; i+=10) {
-      for(int nui = 0; nui < 3; ++nui) {
-        Eigen::Vector3d prob;
-        if(loading) {
-          ifile >> prob(0) >> prob(1) >> prob(2);
-        } else {
-          prob = osc.trans(nui , 0.7, i, 1, step*3.1416*2/numsteps);
-          ofile << prob(0) << ' ' << prob(1) << ' ' << prob(2) << ' ';
-        }
-        nu[nui][step].push_back(prob);
-      } // Loop over input neutrinos.
-    } // Loop over neutrino path.
-  } // Loop over variations of paths.
+  // Test slider.
+  double& sliderval = osc.pars().dCP;
+  Slider slider(sliderval);
+  slider.setLimits(-3.1416, 3.1416);
+  slider.setSize(window.getSize().x*0.4, window.getSize().y*0.01);
+  slider.setPosition(window.getSize().x/2, window.getSize().y*0.05);
+  // dCP circle.
+  sf::CircleShape dcpcirc(30,20);
+  dcpcirc.setFillColor(sf::Color::Black);
+  dcpcirc.setOutlineColor(sf::Color::White);
+  dcpcirc.setOutlineThickness(3);
+  dcpcirc.setOrigin(dcpcirc.getRadius(), dcpcirc.getRadius());
+  dcpcirc.setPosition(50, 50);
+  // dCP indicator.
+  sf::RectangleShape dcpline(sf::Vector2f(40,3));
+  dcpline.setFillColor(sf::Color::White);
+  dcpline.setOrigin(0, dcpline.getLocalBounds().height/2);
+  dcpline.setPosition(50,50);
+
+  // Mouse input variables.
+  Eigen::Vector2d mouse_pos(0,0);
+  bool mouse_pressed = false;
 
   //Main Loop
-  long long patht = 0;
   int neut = 0;
-  bool go = false;
   bool animate = false;
+  bool redraw = true;
   while (window.isOpen()) {
     sf::Event event;
     while (window.pollEvent(event)) {
@@ -94,66 +90,76 @@ int main(int argc, char *argv[]) {
           window.close();
           break;
         } else if (keycode == sf::Keyboard::Space) {
-          if(go) {
-            animate = !animate;
-          }
-          go = true;
+          animate = !animate;
         } else if (keycode == sf::Keyboard::Right) {
           neut = (neut+1)%3;
+          redraw = true;
         } else if (keycode == sf::Keyboard::Left) {
           neut -= 1;
           if(neut<0) neut += 3;
+          redraw = true;
         } else if (keycode == sf::Keyboard::Up) {
-          patht += 1;
+          sliderval += 0.03;
+          redraw = true;
         } else if (keycode == sf::Keyboard::Down) {
-          patht -= 1;
+          sliderval -= 0.03;
+          redraw = true;
         }
-        // else if (keycode == sf::Keyboard::C) {
-        //   capture = true;
-        // }
       } else if (event.type == sf::Event::Resized) {
         const sf::FloatRect visibleArea(0, 0, (float)event.size.width, (float)event.size.height);
         window.setView(sf::View(visibleArea));
+        slider.setSize(window.getSize().x*0.4, window.getSize().y*0.01);
+        slider.setPosition(window.getSize().x/2, window.getSize().y*0.05);
         tgraph.updateWindow();
+      } else if (event.type == sf::Event::MouseMoved) {
+        mouse_pos = Eigen::Vector2d(event.mouseMove.x, event.mouseMove.y);
+      } else if (event.type == sf::Event::MouseButtonPressed) {
+        mouse_pos = Eigen::Vector2d(event.mouseButton.x, event.mouseButton.y);
+        slider.setActive(mouse_pos);
+        // ActivatePoint(renderTexture);
+      } else if (event.type == sf::Event::MouseButtonReleased) {
+        mouse_pos = Eigen::Vector2d(event.mouseButton.x, event.mouseButton.y);
+        slider.unsetActive();
       }
     }
 
+    // Need to do this to prevent drawings from remaining on screen after frame.
     glClear(GL_COLOR_BUFFER_BIT);
 
-    while(patht < 0) patht += numsteps;
-
-    if(go) {
-      tgraph.clear();
-      tgraph.addDrawing(nu[neut][(int)(patht)%((int)nu[neut].size())]);
+    // Handle mouse dragging.
+    if(slider.drag(mouse_pos)) {
+      redraw = true;
     }
-
-    tgraph.draw();
+    // Draw the slider.
+    slider.draw(window);
 
     // Draw dCP circle.
-    sf::CircleShape dcpcirc(30,20);
-    dcpcirc.setFillColor(sf::Color::Black);
-    dcpcirc.setOutlineColor(sf::Color::White);
-    dcpcirc.setOutlineThickness(3);
-    dcpcirc.setOrigin(dcpcirc.getRadius(), dcpcirc.getRadius());
-    dcpcirc.setPosition(50, 50);
     window.draw(dcpcirc);
-    // dCP indicator.
-    sf::RectangleShape dcpline(sf::Vector2f(40,3));
-    dcpline.setFillColor(sf::Color::White);
-    dcpline.setOrigin(0, dcpline.getLocalBounds().height/2);
-    dcpline.setPosition(50,50);
-    dcpline.rotate(-patht*360/numsteps);
+    dcpline.rotate(-sliderval*180/3.1416);
     window.draw(dcpline);
+    dcpline.rotate(sliderval*180/3.1416);
+
+    // If sliding, change the neutrino.
+    if(redraw || animate) {
+      tgraph.clear();
+      osc.update(); // Update internal mixing matrix etc.
+      // Determine neutrino path on the fly.
+      std::vector<Eigen::Vector3d> prob(23000/10);
+      for(int i = 0; i < 23000; i+=10) {
+        prob[i/10] = osc.trans(neut , 0.7, i);
+      }
+      tgraph.addDrawing(prob);
+      redraw = false;
+    }
+    tgraph.draw();
 
     //Flip the screen buffer
     window.display();
-    // Advance path time only if program has started and animation is on.
-    if(go) {
-      if(animate) {
-        ++patht;
-      }
-      ++tgraph.t; // Advance graph time if program has started.
+    // Advance animation time.
+    if(animate) {
+      sliderval += 0.03;
     }
+    ++tgraph.t; // Advance graph time for initial drawing animation.
   }
 
   return 0;
