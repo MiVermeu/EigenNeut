@@ -6,15 +6,17 @@
 #include <random>
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
+#include <Eigen/Dense>
 
 #include "DrawUtil.h"
 #include "NeutOsc.h"
+#include "ControlPanel.h"
 #include "Slider.h"
 
 typedef std::vector<Eigen::Vector3d> NuPath;
 
-static const int start_w = 1440;
-static const int start_h = 1080;
+static const int start_w = 2000;
+static const int start_h = 1000;
 static const bool start_fullscreen = false;
 static const int render_scale = 1;
 
@@ -22,7 +24,6 @@ int main(int argc, char *argv[]) {
   //Get the screen size
   sf::VideoMode screenSize = sf::VideoMode::getDesktopMode();
   screenSize = sf::VideoMode(start_w, start_h, screenSize.bitsPerPixel);
-  // DrawUtil::render_scale = float(render_scale) * 0.5f;
   
   //GL settings
   sf::ContextSettings settings;
@@ -50,13 +51,8 @@ int main(int argc, char *argv[]) {
   // Create ternary graph and oscillator class instances.
   DrawUtil::TernaryGraph tgraph(window);
   neutosc::Oscillator osc;
+  ControlPanel cp(window, osc.pars());
 
-  // Test slider.
-  double& sliderval = osc.pars().dCP;
-  Slider slider(sliderval);
-  slider.setLimits(-3.1416, 3.1416);
-  slider.setSize(window.getSize().x*0.4, window.getSize().y*0.01);
-  slider.setPosition(window.getSize().x/2, window.getSize().y*0.05);
   // dCP circle.
   sf::CircleShape dcpcirc(30,20);
   dcpcirc.setFillColor(sf::Color::Black);
@@ -99,27 +95,24 @@ int main(int argc, char *argv[]) {
           if(neut<0) neut += 3;
           redraw = true;
         } else if (keycode == sf::Keyboard::Up) {
-          sliderval += 0.03;
+          osc.pars().dCP += 0.03;
           redraw = true;
         } else if (keycode == sf::Keyboard::Down) {
-          sliderval -= 0.03;
+          osc.pars().dCP -= 0.03;
           redraw = true;
         }
       } else if (event.type == sf::Event::Resized) {
         const sf::FloatRect visibleArea(0, 0, (float)event.size.width, (float)event.size.height);
         window.setView(sf::View(visibleArea));
-        slider.setSize(window.getSize().x*0.4, window.getSize().y*0.01);
-        slider.setPosition(window.getSize().x/2, window.getSize().y*0.05);
         tgraph.updateWindow();
       } else if (event.type == sf::Event::MouseMoved) {
         mouse_pos = Eigen::Vector2d(event.mouseMove.x, event.mouseMove.y);
       } else if (event.type == sf::Event::MouseButtonPressed) {
         mouse_pos = Eigen::Vector2d(event.mouseButton.x, event.mouseButton.y);
-        slider.setActive(mouse_pos);
-        // ActivatePoint(renderTexture);
+        cp.setActive(mouse_pos);
       } else if (event.type == sf::Event::MouseButtonReleased) {
         mouse_pos = Eigen::Vector2d(event.mouseButton.x, event.mouseButton.y);
-        slider.unsetActive();
+        cp.unsetActive();
       }
     }
 
@@ -127,17 +120,17 @@ int main(int argc, char *argv[]) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Handle mouse dragging.
-    if(slider.drag(mouse_pos)) {
+    if(cp.drag(mouse_pos)) {
       redraw = true;
     }
-    // Draw the slider.
-    slider.draw(window);
+    // Draw control panel.
+    cp.draw(window);
 
-    // Draw dCP circle.
-    window.draw(dcpcirc);
-    dcpline.rotate(-sliderval*180/3.1416);
-    window.draw(dcpline);
-    dcpline.rotate(sliderval*180/3.1416);
+    // // Draw dCP circle.
+    // window.draw(dcpcirc);
+    // dcpline.rotate(-osc.pars().dCP*180/3.1416);
+    // window.draw(dcpline);
+    // dcpline.rotate(osc.pars().dCP*180/3.1416);
 
     // If sliding, change the neutrino.
     if(redraw || animate) {
@@ -157,7 +150,7 @@ int main(int argc, char *argv[]) {
     window.display();
     // Advance animation time.
     if(animate) {
-      sliderval += 0.03;
+      osc.pars().dCP += 0.03;
     }
     ++tgraph.t; // Advance graph time for initial drawing animation.
   }

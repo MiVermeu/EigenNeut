@@ -50,6 +50,9 @@ class Oscillator {
     const double c23 = cos(op.th23);
     const double c13 = cos(op.th13);
 
+    // Make sure the mass differences are always consistent.
+    op.Dm32sq = op.Dm31sq-op.Dm21sq;
+
     Eigen::Matrix3cd U1;
     U1 << 1, 0, 0,
           0, c23, s23,
