@@ -41,7 +41,7 @@ class Slider {
     labelsprite.setTexture(labeltex);
 
     // Handle text.
-    if(!font.loadFromFile("/Users/milo/Downloads/Roboto/Roboto-Regular.ttf")) {
+    if(!font.loadFromFile("../textures/Roboto-Regular.ttf")) {
       std::cout << "Couldn't load font.\n";
     }
     text.setString(std::to_string(val));
