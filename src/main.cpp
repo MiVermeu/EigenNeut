@@ -150,7 +150,9 @@ int main(int argc, char *argv[]) {
     window.display();
     // Advance animation time.
     if(animate) {
-      osc.pars().dCP += 0.03;
+      cp.animate();
+    } else {
+      cp.stopAnimate();
     }
     ++tgraph.t; // Advance graph time for initial drawing animation.
   }

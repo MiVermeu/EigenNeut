@@ -114,7 +114,7 @@ class Slider {
     // Snap.
     for(double sv : snapvals) {
       const double svx = (sv-min)/(max-min) * (maxx-minx) + minx;
-      if(std::abs(newx-svx) < 10) newx = svx;
+      if(std::abs(newx-svx) < 5) newx = svx;
     }
     slidercirc.setPosition(newx, slidercirc.getPosition().y);
     val = (newx-minx)/(maxx-minx) * (max-min) + min;
@@ -122,14 +122,21 @@ class Slider {
     return true;
   }
 
-  // void update() {
-  //   const double minx = sliderline.getPosition().x - width/2;
-  //   const double maxx = sliderline.getPosition().x + width/2;
-  //   const double newx = (val-min)/(max-min) * (maxx-minx) + minx;
-  //   slidercirc.setPosition(newx, slidercirc.getPosition().y);
-  // }
+  void update() {
+    const double minx = sliderline.getPosition().x - width/2;
+    const double maxx = sliderline.getPosition().x + width/2;
+    if(val > max) val = min; // Loop the slider continuously.
+    const double newx = (val-min)/(max-min) * (maxx-minx) + minx;
+    slidercirc.setPosition(newx, slidercirc.getPosition().y);
+    text.setString(std::to_string(val));
+  }
 
-  double getVal() const {
+  void animate() {
+    val += (max-min)/300;
+    update();
+  }
+
+  double getVal() {
     return val;
   }
 }; // class Slider
