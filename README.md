@@ -1,20 +1,25 @@
 # EigenNeut
 Make art using neutrino oscillations! Heavily based on HackerPoet's [**Conics**](https://github.com/HackerPoet/Conics).
 
-## Key Bindings
+## Controls
 * Mouse - Drag the sliders to vary neutrino oscillation parameters.
 * Space Bar - Animate last altered oscillation parameter.
 * Left/Right - Switch between electron, muon and tau neutrino.
 * Escape - Exit the app.
 
-## Neutrino parameters
-For now, you can only change the neutrino oscillation parameters by changing the hardcoded values in `src/NeutOsc.h`.
+## Dependencies
+`SFML 2` and `Eigen 3`
+
+macOS:
+* Install the [**Homebrew**](https://brew.sh) package manager.
+* `brew install sfml`
+* `brew install eigen`
+
+Ubuntu:
+* `sudo apt-get install libsfml-dev`
+* `sudo apt-get install libeigen3-dev`
 
 ## Building
-
-Dependencies: `SFML 2`, `Eigen 3`.
-
-Building with CMake:
 
 * `mkdir build`
 * `cd build`
