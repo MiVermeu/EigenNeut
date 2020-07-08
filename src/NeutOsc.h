@@ -81,24 +81,17 @@ class Oscillator {
 
   Eigen::Vector3d trans(int nu1, double E, double L) {
     Eigen::Vector3d P(0,0,0);
-    // P(nu1) += 1; // delta_nu1nu2
-
-    for(int nu2 = 0; nu2 < 3; ++nu2) {
-      P(nu2) += pow(abs(conj(U(nu1,0))*U(nu2,0)),2) + pow(abs(conj(U(nu1,1))*U(nu2,1)),2) + pow(abs(conj(U(nu1,2))*U(nu2,2)),2) +
-                2*(conj(U(nu1,0))*U(nu2,0)*U(nu1,1)*conj(U(nu2,1)) * exp(-If*2.54*Dmsq(0,1)*L/E)).real() +
-                2*(conj(U(nu1,0))*U(nu2,0)*U(nu1,2)*conj(U(nu2,2)) * exp(-If*2.54*Dmsq(0,2)*L/E)).real() +
-                2*(conj(U(nu1,1))*U(nu2,1)*U(nu1,2)*conj(U(nu2,2)) * exp(-If*2.54*Dmsq(1,2)*L/E)).real();
-    }
+    P(nu1) += 1; // delta_nu1nu2
     
-    // // "Simplified" version that does not work right now.
-    // for(int j = 0; j < 2; ++j) {
-    //   for(int i = j+1; i < 3; ++i) {
-    //     for(int nu = 0; nu < 3; ++nu) {
-    //       P(nu) -= 4*(conj(U(nu1,i))*U(nu,i)*U(nu1,j)*conj(U(nu,j))).real() * pow(sin(1.27*Dmsq(i,j)*L/E), 2);
-    //       P(nu) += 2*(conj(U(nu1,i))*U(nu,i)*U(nu1,j)*conj(U(nu,j))).imag() * sin(1.27*Dmsq(i,j)*L/E);
-    //     }
-    //   }
-    // }
+    // Perform oscillation for each outcome nu2.
+    for(int j = 0; j < 2; ++j) {
+      for(int i = j+1; i < 3; ++i) {
+        for(int nu2 = 0; nu2 < 3; ++nu2) {
+          P(nu2) -= 4*(conj(U(nu1,i))*U(nu2,i)*U(nu1,j)*conj(U(nu2,j))).real() * pow(sin(1.27*Dmsq(i,j)*L/E), 2)
+                    - 2*(conj(U(nu1,i))*U(nu2,i)*U(nu1,j)*conj(U(nu2,j))).imag() * sin(2*1.27*Dmsq(i,j)*L/E);
+        }
+      }
+    }
     return P;
   } // Oscillator::trans()
 }; // class Oscillator

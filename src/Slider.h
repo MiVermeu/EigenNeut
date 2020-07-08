@@ -132,7 +132,7 @@ class Slider {
   }
 
   void animate() {
-    val += (max-min)/500;
+    val += (max-min)/400;
     update();
   }
 
