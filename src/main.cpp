@@ -94,13 +94,14 @@ int main(int argc, char *argv[]) {
           neut -= 1;
           if(neut<0) neut += 3;
           redraw = true;
-        } else if (keycode == sf::Keyboard::Up) {
-          osc.pars().dCP += 0.03;
-          redraw = true;
-        } else if (keycode == sf::Keyboard::Down) {
-          osc.pars().dCP -= 0.03;
-          redraw = true;
         }
+        // else if (keycode == sf::Keyboard::Up) {
+        //   osc.pars().dCP += 0.03;
+        //   redraw = true;
+        // } else if (keycode == sf::Keyboard::Down) {
+        //   osc.pars().dCP -= 0.03;
+        //   redraw = true;
+        // }
       } else if (event.type == sf::Event::Resized) {
         const sf::FloatRect visibleArea(0, 0, (float)event.size.width, (float)event.size.height);
         window.setView(sf::View(visibleArea));
@@ -148,7 +149,7 @@ int main(int argc, char *argv[]) {
 
     //Flip the screen buffer
     window.display();
-    // Advance animation time.
+    // Animate.
     if(animate) {
       cp.animate();
     } else {
