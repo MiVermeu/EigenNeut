@@ -95,13 +95,6 @@ int main(int argc, char *argv[]) {
           if(neut<0) neut += 3;
           redraw = true;
         }
-        // else if (keycode == sf::Keyboard::Up) {
-        //   osc.pars().dCP += 0.03;
-        //   redraw = true;
-        // } else if (keycode == sf::Keyboard::Down) {
-        //   osc.pars().dCP -= 0.03;
-        //   redraw = true;
-        // }
       } else if (event.type == sf::Event::Resized) {
         const sf::FloatRect visibleArea(0, 0, (float)event.size.width, (float)event.size.height);
         window.setView(sf::View(visibleArea));
@@ -127,22 +120,15 @@ int main(int argc, char *argv[]) {
     // Draw control panel.
     cp.draw(window);
 
-    // // Draw dCP circle.
-    // window.draw(dcpcirc);
-    // dcpline.rotate(-osc.pars().dCP*180/3.1416);
-    // window.draw(dcpline);
-    // dcpline.rotate(osc.pars().dCP*180/3.1416);
-
     // If sliding, change the neutrino.
+    const int numsteps = 1000;
+    const double E = 1;
+    const double L = 33060.7*E; // PI / (1.267*Dm21sq) * E (Full Dm12sq period.)
     if(redraw || animate) {
       tgraph.clear();
       osc.update(); // Update internal mixing matrix etc.
       // Determine neutrino path on the fly.
-      std::vector<Eigen::Vector3d> prob(23000/10);
-      for(int i = 0; i < 23000; i+=10) {
-        prob[i/10] = osc.trans(neut , 0.7, i);
-      }
-      tgraph.addDrawing(prob);
+      tgraph.addDrawing(osc.trans(neut, E, L, L/numsteps));
       redraw = false;
     }
     tgraph.draw();

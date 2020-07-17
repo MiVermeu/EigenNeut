@@ -63,15 +63,16 @@ void TernaryGraph::draw() {
   // Draw all added drawings.
   for(int di = 0; di < drawings.size(); ++di) {
     std::vector<sf::Vertex>& drawing = drawings[di];
+
     glLineWidth(5);
     for(int i = 0; i < drawing.size(); ++i) {
       // Normalise colours so there's always one out of rgb at 255.
-      double cmax = std::max(std::max(probs[di][i](0), probs[di][i](1)), probs[di][i](2));
+      const double cmax = std::max(std::max(probs[di][i](0), probs[di][i](1)), probs[di][i](2));
       drawing[i].color = sf::Color(255*probs[di][i](2)/cmax,
                                    255*probs[di][i](0)/cmax,
                                    255*probs[di][i](1)/cmax);
     }
-    window.draw(drawing.data(), std::min((size_t)t*10,drawing.size()), sf::PrimitiveType::LineStrip);
+    window.draw(drawing.data(), /* std::min((size_t)t*10,drawing.size()) */ drawing.size(), sf::PrimitiveType::LineStrip);
   }
   for(std::vector<sf::Vertex>& drawing : drawings) {
     glLineWidth(7);

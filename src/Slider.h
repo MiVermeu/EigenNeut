@@ -58,7 +58,7 @@ class Slider {
     pos = Eigen::Vector2d(newx, newy);
     sliderline.setPosition(newx, newy);
     slidercirc.setPosition(newx - width/2 + (val-min)/(max-min) * width, newy);
-    labelsprite.setPosition(newx - width/2 - labelsprite.getGlobalBounds().width * 1.2,
+    labelsprite.setPosition(newx - width/2 - labelsprite.getGlobalBounds().width - 30,
                             newy - labelsprite.getGlobalBounds().height/2);
     text.setFont(font);
     text.setPosition(newx + width/2 * 1.1, newy - text.getGlobalBounds().height);
@@ -114,7 +114,7 @@ class Slider {
     // Snap.
     for(double sv : snapvals) {
       const double svx = (sv-min)/(max-min) * (maxx-minx) + minx;
-      if(std::abs(newx-svx) < 5) newx = svx;
+      if(std::abs(newx-svx) < 10) newx = svx;
     }
     slidercirc.setPosition(newx, slidercirc.getPosition().y);
     val = (newx-minx)/(maxx-minx) * (max-min) + min;

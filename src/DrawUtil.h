@@ -56,7 +56,7 @@ class TernaryGraph {
   // Draw everything in class.
   void draw();
   // Add a drawing in the form of a vector of 3D positions.
-  void addDrawing(std::vector<Eigen::Vector3d>& vec) {
+  void addDrawing(const std::vector<Eigen::Vector3d>& vec) {
     probs.push_back(vec);
     updateWindow();
   } // void addDrawing

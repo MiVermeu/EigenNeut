@@ -28,6 +28,7 @@ class ControlPanel {
     Slider Dm21sqslider(op.Dm21sq, "Delta_m_21^2.png");
     Slider Dm31sqslider(op.Dm31sq, "Delta_m_31^2.png");
     // Slider Dm32sqslider(op.Dm32sq);
+    Slider rhoslider(op.rho, "rho.png");
 
     th12slider.setLimits(0, PI);
     th23slider.setLimits(0, PI);
@@ -36,6 +37,7 @@ class ControlPanel {
     Dm21sqslider.setLimits(0, 2.e-4);
     Dm31sqslider.setLimits(0, 5.e-3);
     // Dm32sqslider.setLimits(0, 5.e-3);
+    rhoslider.setLimits(0, 5000);
 
     th12slider.setSnap(op.th12);
     th12slider.setSnap(PI/2);
@@ -48,6 +50,7 @@ class ControlPanel {
     Dm21sqslider.setSnap(op.Dm21sq);
     Dm31sqslider.setSnap(op.Dm31sq);
     // Dm32sqslider.setSnap(op.Dm32sq);
+    rhoslider.setSnap(2700);
     
     sliders.push_back(th12slider);
     sliders.push_back(th23slider);
@@ -56,10 +59,11 @@ class ControlPanel {
     sliders.push_back(Dm21sqslider);
     sliders.push_back(Dm31sqslider);
     // sliders.push_back(Dm32sqslider);
+    sliders.push_back(rhoslider);
 
     for(int si = 0; si < sliders.size(); ++si) {
       sliders[si].setSize(500, 20);
-      sliders[si].setPosition(window.getSize().x*0.22, window.getSize().y*0.05*(1+si));
+      sliders[si].setPosition(window.getSize().x*0.22, window.getSize().y*0.06*(1+si));
     }
   }
 
