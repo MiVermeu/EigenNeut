@@ -35,7 +35,7 @@ class ControlPanel {
     th13slider.setLimits(0, PI);
     dCPslider.setLimits(0, 2*PI);
     Dm21sqslider.setLimits(0, 2.e-4);
-    Dm31sqslider.setLimits(0, 5.e-3);
+    Dm31sqslider.setLimits(-5.e-3, 5.e-3);
     // Dm32sqslider.setLimits(0, 5.e-3);
     rhoslider.setLimits(0, 5000);
 
@@ -49,6 +49,8 @@ class ControlPanel {
     dCPslider.setSnap(PI);
     Dm21sqslider.setSnap(op.Dm21sq);
     Dm31sqslider.setSnap(op.Dm31sq);
+    Dm31sqslider.setSnap(0);
+    Dm31sqslider.setSnap(-op.Dm31sq);
     // Dm32sqslider.setSnap(op.Dm32sq);
     rhoslider.setSnap(2700);
     

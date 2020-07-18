@@ -24,11 +24,13 @@ class TernaryGraph {
   sf::Vector2f right;
   const int numDiv = 10;
 
-  // Window parameters.
+  // Window and drawing parameters.
   sf::RenderWindow& window;
   double width;
   double height;
+  sf::Vector2i pos;
   sf::Vector2f centre;
+  sf::Vector2u oldWindowSize; // For scale when resizing.
 
   // Transformations.
   sf::Transform rot120;
@@ -53,13 +55,21 @@ class TernaryGraph {
   sf::Vector2f TriPoint(sf::Vector3f a) { return TriPoint(a.x,a.y,a.z); }
   sf::Vector2f TriPoint(Eigen::Vector3d a) { return TriPoint(a(0),a(1),(2)); }
 
+  // Set position (top left corner) and size (wxh) of ternary plot.
+  void setPosition(const double x, const double y) {
+    pos.x = x; pos.y = y;
+  }
+  void setSize(const double w, const double h) {
+    width = w; height = h;
+  }
+
   // Draw everything in class.
   void draw();
   // Add a drawing in the form of a vector of 3D positions.
   void addDrawing(const std::vector<Eigen::Vector3d>& vec) {
     probs.push_back(vec);
     updateWindow();
-  } // void addDrawing
+  }
   // Clear all drawings.
   void clear() { probs.resize(0); }
   // Update all relevant parameters in case of a window size change.

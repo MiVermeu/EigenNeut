@@ -12,7 +12,7 @@ void Line(sf::RenderWindow& window, const sf::Vector2f& a, const sf::Vector2f& b
 TernaryGraph::TernaryGraph(sf::RenderWindow& window):
         triangle(100,3), tcentre(0,0), triangleR(0),
         window(window),width(window.getSize().x), height(window.getSize().y),
-        centre(width*0.5, height*0.5) {
+        oldWindowSize(window.getSize()), centre(pos.x+width*0.5, pos.y+height*0.5) {
   glLineWidth(10);
   updateWindow();
 
@@ -42,10 +42,9 @@ void TernaryGraph::draw() {
 
   // Draw divider lines.
   for(int i = 0; i <= numDiv; ++i) {
-    const double y = left.y - i*(left.y-top.y)/numDiv;
-    const double x = centre.x - (1-(double)i/numDiv)*0.5*sideL;
-    const sf::Vector2f a(x-triangleR*0.1,y); // Offset for ticks.
-    const sf::Vector2f b(width-x,y);
+    const sf::Vector2f a = left + (float)i*(top-left)/(float)numDiv
+                           - sf::Vector2f(triangleR*0.1, 0); // Offset for ticks.
+    const sf::Vector2f b = right + (float)i*(top-right)/(float)numDiv;
     Line(window, a, b, 0.5);
     const sf::Vector2f a120 = rot120.transformPoint(a);
     const sf::Vector2f b120 = rot120.transformPoint(b);
@@ -89,9 +88,13 @@ void TernaryGraph::draw() {
 
 // Update all relevant parameters in case of a window size change.
 void TernaryGraph::updateWindow() {
-  width = window.getSize().x;
-  height = window.getSize().y;
-  centre = sf::Vector2f(width*0.5, height*0.5);
+  // Scale by comparing old and new window size.
+  const sf::Vector2f scale((float)window.getSize().x/oldWindowSize.x,
+                           (float)window.getSize().y/oldWindowSize.y);
+  width *= scale.x; height *= scale.y;
+  pos.x *= scale.x; pos.y *= scale.y;
+  centre = sf::Vector2f(pos) + sf::Vector2f(width*0.5, height*0.5);
+  oldWindowSize = window.getSize();
 
   // Triangle parameters.
   triangleR = std::min(width/sqrt(3), height/1.5) * 0.7;

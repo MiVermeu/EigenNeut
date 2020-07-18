@@ -50,21 +50,10 @@ int main(int argc, char *argv[]) {
   
   // Create ternary graph and oscillator class instances.
   DrawUtil::TernaryGraph tgraph(window);
+  tgraph.setPosition(window.getSize().x/2, 0);
+  tgraph.setSize(window.getSize().x/2, window.getSize().y);
   neutosc::Oscillator osc;
   ControlPanel cp(window, osc.pars());
-
-  // dCP circle.
-  sf::CircleShape dcpcirc(30,20);
-  dcpcirc.setFillColor(sf::Color::Black);
-  dcpcirc.setOutlineColor(sf::Color::White);
-  dcpcirc.setOutlineThickness(3);
-  dcpcirc.setOrigin(dcpcirc.getRadius(), dcpcirc.getRadius());
-  dcpcirc.setPosition(50, 50);
-  // dCP indicator.
-  sf::RectangleShape dcpline(sf::Vector2f(40,3));
-  dcpline.setFillColor(sf::Color::White);
-  dcpline.setOrigin(0, dcpline.getLocalBounds().height/2);
-  dcpline.setPosition(50,50);
 
   // Mouse input variables.
   Eigen::Vector2d mouse_pos(0,0);
