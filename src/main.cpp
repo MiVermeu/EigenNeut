@@ -15,7 +15,7 @@
 
 typedef std::vector<Eigen::Vector3d> NuPath;
 
-static const int start_w = 2000;
+static const int start_w = 1500;
 static const int start_h = 1000;
 static const bool start_fullscreen = false;
 static const int render_scale = 1;
@@ -50,10 +50,12 @@ int main(int argc, char *argv[]) {
   
   // Create ternary graph and oscillator class instances.
   DrawUtil::TernaryGraph tgraph(window);
-  tgraph.setPosition(window.getSize().x/2, 0);
-  tgraph.setSize(window.getSize().x/2, window.getSize().y);
+  tgraph.setPosition(window.getSize().x/4, 0);
+  tgraph.setSize(window.getSize().x/4.*3, window.getSize().y);
   neutosc::Oscillator osc;
   ControlPanel cp(window, osc.pars());
+  cp.setPosition(0,0);
+  cp.setSize(600,500);
 
   // Mouse input variables.
   Eigen::Vector2d mouse_pos(0,0);
@@ -88,6 +90,7 @@ int main(int argc, char *argv[]) {
         const sf::FloatRect visibleArea(0, 0, (float)event.size.width, (float)event.size.height);
         window.setView(sf::View(visibleArea));
         tgraph.updateWindow();
+        cp.updateWindow();
       } else if (event.type == sf::Event::MouseMoved) {
         mouse_pos = Eigen::Vector2d(event.mouseMove.x, event.mouseMove.y);
       } else if (event.type == sf::Event::MouseButtonPressed) {
@@ -107,7 +110,7 @@ int main(int argc, char *argv[]) {
       redraw = true;
     }
     // Draw control panel.
-    cp.draw(window);
+    cp.draw();
 
     // If sliding, change the neutrino.
     const int numsteps = 1000;

@@ -71,7 +71,7 @@ void TernaryGraph::draw() {
                                    255*probs[di][i](0)/cmax,
                                    255*probs[di][i](1)/cmax);
     }
-    window.draw(drawing.data(), /* std::min((size_t)t*10,drawing.size()) */ drawing.size(), sf::PrimitiveType::LineStrip);
+    window.draw(drawing.data(), std::min((size_t)t*10,drawing.size()), sf::PrimitiveType::LineStrip);
   }
   for(std::vector<sf::Vertex>& drawing : drawings) {
     glLineWidth(7);
@@ -97,7 +97,7 @@ void TernaryGraph::updateWindow() {
   oldWindowSize = window.getSize();
 
   // Triangle parameters.
-  triangleR = std::min(width/sqrt(3), height/1.5) * 0.7;
+  triangleR = std::min(width/sqrt(3), height/1.5) * 0.75;
   sideL = triangleR*sqrt(3);
   top = sf::Vector2f(centre.x, centre.y-sideL*sqrt(0.75)*0.5);
   left = sf::Vector2f(centre.x-sideL*0.5, centre.y+sideL*sqrt(0.75)*0.5);

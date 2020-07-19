@@ -20,7 +20,7 @@ class Slider {
   sf::CircleShape slidercirc;
   sf::RectangleShape sliderline;
   std::vector<sf::RectangleShape> snaplines;
-  // Textures and sprites for labels
+  // Textures and sprites for labels.
   sf::Texture labeltex;
   sf::Sprite labelsprite;
   // Text field.
@@ -40,12 +40,11 @@ class Slider {
     labeltex.loadFromFile("../textures/"+texname);
     labelsprite.setTexture(labeltex);
 
-    // Handle text.
+    // Text field.
     if(!font.loadFromFile("../textures/Roboto-Regular.ttf")) {
       std::cout << "Couldn't load font.\n";
     }
     text.setString(std::to_string(val));
-    text.setCharacterSize(24);
     text.setFillColor(sf::Color::White);
   }
 
@@ -56,25 +55,30 @@ class Slider {
 
   void setPosition(double newx, double newy) {
     pos = Eigen::Vector2d(newx, newy);
-    sliderline.setPosition(newx, newy);
-    slidercirc.setPosition(newx - width/2 + (val-min)/(max-min) * width, newy);
-    labelsprite.setPosition(newx - width/2 - labelsprite.getGlobalBounds().width - 30,
-                            newy - labelsprite.getGlobalBounds().height/2);
+    sliderline.setPosition(newx - width*0.07, newy); // Line is not exactly centred in slider.
+    const sf::Vector2u slpos(sliderline.getPosition().x, sliderline.getPosition().y);
+    const double slw = sliderline.getLocalBounds().width;
+    slidercirc.setPosition(slpos.x - slw/2 + (val-min)/(max-min) * slw, slpos.y);
+    labelsprite.setPosition(slpos.x - slw/2*1.15 - labelsprite.getGlobalBounds().width,
+                            slpos.y - labelsprite.getGlobalBounds().height/2);
     text.setFont(font);
-    text.setPosition(newx + width/2 * 1.1, newy - text.getGlobalBounds().height);
+    text.setPosition(slpos.x + slw/2 * 1.1, slpos.y - text.getGlobalBounds().height);
     for(int si = 0; si < snaplines.size(); ++si) {
-      const double minx = pos(0) - width/2;
-      const double maxx = pos(0) + width/2;
-      snaplines[si].setPosition((snapvals[si]-min)/(max-min) * (maxx-minx) + minx, pos(1));
+      const double minx = slpos.x - slw/2;
+      const double maxx = slpos.x + slw/2;
+      snaplines[si].setPosition((snapvals[si]-min)/(max-min) * (maxx-minx) + minx, slpos.y);
     }
   }
 
   void setSize(double newwidth, double newheight) {
     width = newwidth;
     height = newheight;
-    sliderline.setSize(sf::Vector2f(newwidth, 2));
+    sliderline.setSize(sf::Vector2f(newwidth*0.7, 2));
     sliderline.setOrigin(sliderline.getGlobalBounds().width/2, sliderline.getGlobalBounds().height/2);
-    labelsprite.setScale(width/1000, width/1000);
+    slidercirc.setRadius(sliderline.getLocalBounds().width*0.05);
+    slidercirc.setOrigin(slidercirc.getRadius(), slidercirc.getRadius());
+    labelsprite.setScale(width/1100, width/1100);
+    text.setCharacterSize(width/20);
   }
 
   void setSnap(double snapval) {
@@ -108,8 +112,8 @@ class Slider {
 
   bool drag(Eigen::Vector2d mouse_pos) {
     if(!active) return false;
-    const double minx = sliderline.getPosition().x - width/2;
-    const double maxx = sliderline.getPosition().x + width/2;
+    const double minx = sliderline.getPosition().x - sliderline.getLocalBounds().width/2;
+    const double maxx = sliderline.getPosition().x + sliderline.getLocalBounds().width/2;
     double newx = std::max(std::min(maxx, mouse_pos.x()), minx);
     // Snap.
     for(double sv : snapvals) {
@@ -123,8 +127,8 @@ class Slider {
   }
 
   void update() {
-    const double minx = sliderline.getPosition().x - width/2;
-    const double maxx = sliderline.getPosition().x + width/2;
+    const double minx = sliderline.getPosition().x - sliderline.getLocalBounds().width/2;
+    const double maxx = sliderline.getPosition().x + sliderline.getLocalBounds().width/2;
     if(val > max) val = min; // Loop the slider continuously.
     const double newx = (val-min)/(max-min) * (maxx-minx) + minx;
     slidercirc.setPosition(newx, slidercirc.getPosition().y);

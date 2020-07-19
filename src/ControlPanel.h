@@ -13,21 +13,26 @@
 class ControlPanel {
   private:
   std::vector<Slider> sliders;
-  double width, height;
 
   // Animating variables.
   bool animating = false;
   int last_active = 3;
 
+  // Window, position and size.
+  sf::RenderWindow& window;
+  sf::Vector2i pos;
+  sf::Vector2u size;
+  sf::Vector2u oldWindowSize;
+
   public:
-  ControlPanel(sf::RenderWindow& window, neutosc::OscPars& op) {
+  ControlPanel(sf::RenderWindow& window, neutosc::OscPars& op):
+    window(window) {
     Slider th12slider(op.th12, "theta_12.png");
     Slider th23slider(op.th23, "theta_23.png");
     Slider th13slider(op.th13, "theta_13.png");
     Slider dCPslider(op.dCP, "delta_CP.png");
     Slider Dm21sqslider(op.Dm21sq, "Delta_m_21^2.png");
     Slider Dm31sqslider(op.Dm31sq, "Delta_m_31^2.png");
-    // Slider Dm32sqslider(op.Dm32sq);
     Slider rhoslider(op.rho, "rho.png");
 
     th12slider.setLimits(0, PI);
@@ -36,7 +41,6 @@ class ControlPanel {
     dCPslider.setLimits(0, 2*PI);
     Dm21sqslider.setLimits(0, 2.e-4);
     Dm31sqslider.setLimits(-5.e-3, 5.e-3);
-    // Dm32sqslider.setLimits(0, 5.e-3);
     rhoslider.setLimits(0, 5000);
 
     th12slider.setSnap(op.th12);
@@ -51,7 +55,6 @@ class ControlPanel {
     Dm31sqslider.setSnap(op.Dm31sq);
     Dm31sqslider.setSnap(0);
     Dm31sqslider.setSnap(-op.Dm31sq);
-    // Dm32sqslider.setSnap(op.Dm32sq);
     rhoslider.setSnap(2700);
     
     sliders.push_back(th12slider);
@@ -60,19 +63,38 @@ class ControlPanel {
     sliders.push_back(dCPslider);
     sliders.push_back(Dm21sqslider);
     sliders.push_back(Dm31sqslider);
-    // sliders.push_back(Dm32sqslider);
     sliders.push_back(rhoslider);
 
-    for(int si = 0; si < sliders.size(); ++si) {
-      sliders[si].setSize(500, 20);
-      sliders[si].setPosition(window.getSize().x*0.22, window.getSize().y*0.06*(1+si));
-    }
+    updateWindow();
   }
 
-  void draw(sf::RenderWindow& window) {
+  void draw() {
     for(Slider& slider : sliders) {
       slider.draw(window);
     }
+  }
+
+  void updateWindow() {
+    // Scale by comparing old and new window size.
+    const sf::Vector2f scale((float)window.getSize().x/oldWindowSize.x,
+                            (float)window.getSize().y/oldWindowSize.y);
+    size.x *= scale.x; size.y *= scale.y;
+    pos.x *= scale.x; pos.y *= scale.y;
+    oldWindowSize = window.getSize();
+
+    for(int si = 0; si < sliders.size(); ++si) {
+      sliders[si].setSize(size.x * 0.8, size.y / sliders.size());
+      sliders[si].setPosition(pos.x + size.x/2 * 1.1, pos.y + (1+si)* size.y / (sliders.size()+1));
+    }
+  }
+
+  void setPosition(const int x, const int y) {
+    pos.x = x; pos.y = y;
+    updateWindow();
+  }
+  void setSize(const unsigned w, const unsigned h) {
+    size.x = w; size.y = h;
+    updateWindow();
   }
 
   void setActive(Eigen::Vector2d mouse_pos) {
