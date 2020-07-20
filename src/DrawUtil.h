@@ -11,6 +11,9 @@
 namespace DrawUtil{
 
 void Line(sf::RenderWindow& window, const sf::Vector2f& a, const sf::Vector2f& b, const double width);
+sf::Vector2f normalized(const sf::Vector2f a);
+sf::Vector2f normal(const sf::Vector2f& a, const sf::Vector2f& b);
+sf::Vector2f miter(const sf::Vector2f& a, const sf::Vector2f& b, const sf::Vector2f& c);
 
 class TernaryGraph {
   private:
@@ -39,6 +42,7 @@ class TernaryGraph {
   // Drawings.
   std::vector<std::vector<Eigen::Vector3d>> probs;
   std::vector<std::vector<sf::Vertex>> drawings;
+  std::vector<std::vector<sf::Vertex>> highlights;
 
   // Textures aand sprites for labels
   sf::Texture nulabeltex[3];
@@ -54,6 +58,11 @@ class TernaryGraph {
   sf::Vector2f TriPoint(float e, float mu, float tau);
   sf::Vector2f TriPoint(sf::Vector3f a) { return TriPoint(a.x,a.y,a.z); }
   sf::Vector2f TriPoint(Eigen::Vector3d a) { return TriPoint(a(0),a(1),(2)); }
+  // Function to transform from 2D ternary point to 3D probability vector.
+  sf::Vector3f InvTriPoint(const sf::Vertex& a);
+
+  // Function to convert point-to-point vertex arrays into triangle strips.
+  std::vector<sf::Vertex> TriStrip(const std::vector<sf::Vertex>& drawing, const double thickness);
 
   // Set position (top left corner) and size (wxh) of ternary plot.
   void setPosition(const double x, const double y) {
@@ -66,10 +75,7 @@ class TernaryGraph {
   // Draw everything in class.
   void draw();
   // Add a drawing in the form of a vector of 3D positions.
-  void addDrawing(const std::vector<Eigen::Vector3d>& vec) {
-    probs.push_back(vec);
-    updateWindow();
-  }
+  void addDrawing(const std::vector<Eigen::Vector3d>& vec);
   // Clear all drawings.
   void clear() { probs.resize(0); }
   // Update all relevant parameters in case of a window size change.
