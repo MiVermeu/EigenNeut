@@ -4,6 +4,7 @@ Make art using neutrino oscillations! Heavily based on HackerPoet's [**Conics**]
 ## Controls
 * Mouse - Drag the sliders to vary neutrino oscillation parameters.
 * Space Bar - Animate last altered oscillation parameter.
+* Enter - Input custom value for last altered oscillation parameter.
 * Left/Right - Switch between electron, muon and tau neutrino.
 * Escape - Exit the app.
 
