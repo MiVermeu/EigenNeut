@@ -137,6 +137,7 @@ void TernaryGraph::updateWindow() {
   // Triangle parameters.
   triangleR = std::min(width/sqrt(3), height/1.5) * 0.75;
   sideL = triangleR*sqrt(3);
+  centre.x = pos.x + width - sideL*0.5/0.75; // Right-align graph in window section.
   top = sf::Vector2f(centre.x, centre.y-sideL*sqrt(0.75)*0.5);
   left = sf::Vector2f(centre.x-sideL*0.5, centre.y+sideL*sqrt(0.75)*0.5);
   right = sf::Vector2f(centre.x+sideL*0.5, centre.y+sideL*sqrt(0.75)*0.5);

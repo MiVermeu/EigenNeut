@@ -56,6 +56,8 @@ class ControlPanel {
     Dm31sqslider.setSnap(0);
     Dm31sqslider.setSnap(-op.Dm31sq);
     rhoslider.setSnap(2700);
+
+    rhoslider.setLoop(false);
     
     sliders.push_back(th12slider);
     sliders.push_back(th23slider);
@@ -119,6 +121,10 @@ class ControlPanel {
       isdragging |= slider.drag(mouse_pos);
     }
     return isdragging;
+  }
+
+  void edit(const sf::Keyboard::Key& key) {
+    sliders[last_active].edit(key);
   }
 
   void update() {

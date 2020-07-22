@@ -85,6 +85,26 @@ int main(int argc, char *argv[]) {
           neut -= 1;
           if(neut<0) neut += 3;
           redraw = true;
+        } else if(keycode == sf::Keyboard::S) {
+          // const std::string filename = "nu.csv";
+          // std::ofstream ofile(filename);
+          // if(!ofile.is_open()) {
+          //   std::cout << "Couldn't open file " << filename << ".\n";
+          //   return;
+          // }
+
+          // // Header.
+          // ofile << "L,e,mu,tau\n";
+          // // Record probabilities as function of L.
+          // for(double x = 0; x < L; x += step) {
+          //   ofile << x << ',' << 
+          // }
+          // std::cout << "Saving to " << filename << ".\n";
+        } else if((keycode >= sf::Keyboard::Num0 && keycode <= sf::Keyboard::Num9) ||
+                  keycode == sf::Keyboard::Period || keycode == sf::Keyboard::Enter ||
+                  keycode == sf::Keyboard::Backspace) {
+          cp.edit(keycode);
+          redraw = true;
         }
       } else if (event.type == sf::Event::Resized) {
         const sf::FloatRect visibleArea(0, 0, (float)event.size.width, (float)event.size.height);

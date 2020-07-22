@@ -4,16 +4,36 @@
 #include <SFML/OpenGL.hpp>
 #include <Eigen/Dense>
 
+char sfKeyToChar(const sf::Keyboard::Key& key) {
+  switch (key) {
+    case sf::Keyboard::Num0: return '0';
+    case sf::Keyboard::Num1: return '1';
+    case sf::Keyboard::Num2: return '2';
+    case sf::Keyboard::Num3: return '3';
+    case sf::Keyboard::Num4: return '4';
+    case sf::Keyboard::Num5: return '5';
+    case sf::Keyboard::Num6: return '6';
+    case sf::Keyboard::Num7: return '7';
+    case sf::Keyboard::Num8: return '8';
+    case sf::Keyboard::Num9: return '9';
+    case sf::Keyboard::Period: return '.';
+    default: return '?';
+  }
+}
+
 class Slider {
   private:
   // Slider attributes.
   double min = 0;
   double max = 0;
   double& val;
+  bool loop = true; // Make values either loop or increase continuously.
   Eigen::Vector2d pos;
   double width = 20;
   double height = 0;
   bool active = false;
+  bool editing = false;
+  std::string editingstring;
   std::vector<double> snapvals;
 
   // Drawn objects.
@@ -88,6 +108,8 @@ class Slider {
     snaplines.push_back(snapline);
   }
 
+  void setLoop(bool newval) { loop = newval; }
+
   void draw(sf::RenderWindow& window) {
     window.draw(slidercirc);
     window.draw(sliderline);
@@ -126,11 +148,46 @@ class Slider {
     return true;
   }
 
+  void edit(const sf::Keyboard::Key& key) {
+    // Toggle editing on this slider.
+    if(key == sf::Keyboard::Enter && editing == false) {
+      editing = true;
+      editingstring = "";
+      text.setString("");
+    } else if(key == sf::Keyboard::Enter && editing == true) {
+      editing = false;
+      try {
+        val = std::stod(editingstring);
+      } catch(...) {
+        std::cout << "Not a valid number.\n";
+        text.setString(std::to_string(val));
+      }
+      update();
+    }
+
+    // Append number/period to string.
+    if(editing) {
+      if((key >= sf::Keyboard::Num0 && key <= sf::Keyboard::Num9) || key == sf::Keyboard::Period) {
+        editingstring.push_back(sfKeyToChar(key));
+      } else if(key == sf::Keyboard::Backspace) {
+        editingstring.pop_back();
+      }
+      text.setString(editingstring);
+    }
+  }
+
   void update() {
     const double minx = sliderline.getPosition().x - sliderline.getLocalBounds().width/2;
     const double maxx = sliderline.getPosition().x + sliderline.getLocalBounds().width/2;
-    if(val > max) val = min; // Loop the slider continuously.
-    const double newx = (val-min)/(max-min) * (maxx-minx) + minx;
+    double newx = (val-min)/(max-min) * (maxx-minx) + minx;
+    if(val > max) {
+      if(loop) {
+        val -= std::floor(val/(max-min))*(max-min);
+        newx = (val-min)/(max-min) * (maxx-minx) + minx;
+      } else {
+        newx = maxx;
+      }
+    }
     slidercirc.setPosition(newx, slidercirc.getPosition().y);
     text.setString(std::to_string(val));
   }

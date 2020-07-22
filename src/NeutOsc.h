@@ -2,6 +2,7 @@
 #define NEUTOSC_H__
 
 #include <iostream>
+#include <fstream>
 #include <Eigen/Dense>
 #include <unsupported/Eigen/MatrixFunctions>
 #include <complex>
@@ -12,6 +13,9 @@ std::complex<double> If(0,1);
 
 // A struct to hold neutrino oscillation parameters.
 struct OscPars {
+  int nu = 0; // Initial neutrino flavour. 0=e, 1=mu, 2=tau
+  double E = 0.7; // In GeV.
+  double L = 33060.7*E; // PI / (1.267*Dm21sq) * E (Full Dm12sq period.) In km.
   double th12 = 0.5843;
   double th23 = 0.738;
   double th13 = 0.148;
@@ -86,23 +90,6 @@ class Oscillator {
   // Expose the neutrino oscillation parameter set to mess with it.
   OscPars& pars() { return op; }
 
-  // // Analytical determination of neutrino oscillation at fixed distance L (deprecated).
-  // Eigen::Vector3d trans(const int nu1, const double E, const double L) const {
-  //   Eigen::Vector3d P(0,0,0);
-  //   P(nu1) += 1; // delta_nu1nu2
-    
-  //   // Perform oscillation for each outcome nu2.
-  //   for(int j = 0; j < 2; ++j) {
-  //     for(int i = j+1; i < 3; ++i) {
-  //       for(int nu2 = 0; nu2 < 3; ++nu2) {
-  //         P(nu2) -= 4*(conj(U(nu1,i))*U(nu2,i)*U(nu1,j)*conj(U(nu2,j))).real() * pow(sin(1.27*Dmsq(i,j)*L/E), 2)
-  //                   - 2*(conj(U(nu1,i))*U(nu2,i)*U(nu1,j)*conj(U(nu2,j))).imag() * sin(2*1.27*Dmsq(i,j)*L/E);
-  //       }
-  //     }
-  //   }
-  //   return P;
-  // } // Oscillator::trans()
-
   // General transformation function that decides between vacuum and matter oscillation.
   std::vector<Eigen::Vector3d> trans(const int nu1, const double E, const double L, const double step = 10) const {
     return op.rho==0? transvac(nu1, E, L, step): transmat(nu1, E, L, step);
@@ -135,9 +122,9 @@ class Oscillator {
       for(int i=0; i<3; ++i) Hexp(i,i) = exp(Hexp(i,i));
       Eigen::Matrix3cd Vexp = -If*V*x/N; // Temporary matter potential to component-wise exponentiate.
       for(int i=0; i<3; ++i) Vexp(i,i) = exp(Vexp(i,i));
-      // Slow matrix power. Better than exponent...
+      // Slow matrix power. Better than exponential...
       Eigen::MatrixPower<Eigen::Matrix3cd> Apow(Hexp*Ud*Vexp*U);
-      result[x/step] = (U*Apow(N) *Ud*nu).cwiseAbs2();
+      result[x/step] = (U*Apow(N)*Ud*nu).cwiseAbs2();
     }
     return result;
   } // Oscillator::transmat()
