@@ -152,9 +152,9 @@ void TernaryGraph::updateWindow() {
   tcentre = triangle.getPosition() + sf::Vector2f(0,triangleR*(1 - 1.5/2));
 
   // Set label scale and locations.
-  nulabelsprite[0].setScale(sideL/1000, sideL/1000);
-  nulabelsprite[1].setScale(sideL/1000, sideL/1000);
-  nulabelsprite[2].setScale(sideL/1000, sideL/1000);
+  nulabelsprite[0].setScale(sideL/5000, sideL/5000);
+  nulabelsprite[1].setScale(sideL/5000, sideL/5000);
+  nulabelsprite[2].setScale(sideL/5000, sideL/5000);
   nulabelsprite[0].setPosition(top - (right-left)*0.1f);
   nulabelsprite[1].setPosition(right - (left-top)*0.1f);
   nulabelsprite[2].setPosition(left - (top-right)*0.1f);

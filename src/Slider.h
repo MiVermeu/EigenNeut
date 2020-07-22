@@ -97,7 +97,7 @@ class Slider {
     sliderline.setOrigin(sliderline.getGlobalBounds().width/2, sliderline.getGlobalBounds().height/2);
     slidercirc.setRadius(sliderline.getLocalBounds().width*0.05);
     slidercirc.setOrigin(slidercirc.getRadius(), slidercirc.getRadius());
-    labelsprite.setScale(width/1100, width/1100);
+    labelsprite.setScale(width/5000, width/5000);
     text.setCharacterSize(width/20);
   }
 
