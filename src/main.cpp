@@ -62,8 +62,6 @@ int main(int argc, char *argv[]) {
   bool mouse_pressed = false;
 
   //Main Loop
-  int neut = 0;
-  bool animate = false;
   bool redraw = true;
   while (window.isOpen()) {
     sf::Event event;
@@ -77,13 +75,17 @@ int main(int argc, char *argv[]) {
           window.close();
           break;
         } else if (keycode == sf::Keyboard::Space) {
-          animate = !animate;
+          if(cp.isAnimating()) {
+            cp.stopAnimate();
+          } else {
+            cp.animate();
+          }
         } else if (keycode == sf::Keyboard::Right) {
-          neut = (neut+1)%3;
+          osc.pars().nu = (osc.pars().nu+1)%3;
           redraw = true;
         } else if (keycode == sf::Keyboard::Left) {
-          neut -= 1;
-          if(neut<0) neut += 3;
+          osc.pars().nu -= 1;
+          if(osc.pars().nu<0) osc.pars().nu += 3;
           redraw = true;
         } else if(keycode == sf::Keyboard::S) {
           // const std::string filename = "nu.csv";
@@ -132,27 +134,17 @@ int main(int argc, char *argv[]) {
     // Draw control panel.
     cp.draw();
 
-    // If sliding, change the neutrino.
-    const int numsteps = 1000;
-    const double E = 1;
-    const double L = 33060.7*E; // PI / (1.267*Dm21sq) * E (Full Dm12sq period.)
-    if(redraw || animate) {
+    // If redrawing or animating, change the neutrino.
+    if(redraw || cp.isAnimating()) {
       tgraph.clear();
-      osc.update(); // Update internal mixing matrix etc.
-      // Determine neutrino path on the fly.
-      tgraph.addDrawing(osc.trans(neut, E, L, L/numsteps));
+      osc.update(); // Update internal mixing matrix etc. from control panel.
+      tgraph.addDrawing(osc.trans());
       redraw = false;
     }
     tgraph.draw();
 
     //Flip the screen buffer
     window.display();
-    // Animate.
-    if(animate) {
-      cp.animate();
-    } else {
-      cp.stopAnimate();
-    }
     ++tgraph.t; // Advance graph time for initial drawing animation.
   }
 

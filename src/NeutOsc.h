@@ -91,40 +91,44 @@ class Oscillator {
   OscPars& pars() { return op; }
 
   // General transformation function that decides between vacuum and matter oscillation.
-  std::vector<Eigen::Vector3d> trans(const int nu1, const double E, const double L, const double step = 10) const {
-    return op.rho==0? transvac(nu1, E, L, step): transmat(nu1, E, L, step);
+  std::vector<Eigen::Vector3d> trans() const {
+    return op.rho==0? transvac(): transmat();
   } // Oscillator::trans()
 
   // Analytical determination of neutrino oscillation at distance L using Hamiltonian.
-  std::vector<Eigen::Vector3d> transvac(const int nu1, const double E, const double L, const double step = 10) const {
+  std::vector<Eigen::Vector3d> transvac() const {
     Eigen::Vector3cd nu(0,0,0);
-    nu(nu1) = 1;
-    std::vector<Eigen::Vector3d> result(L/step);
+    nu(op.nu) = 1;
+    const double numsteps = 1000;
+    const double step = op.L/numsteps;
+    std::vector<Eigen::Vector3d> result(numsteps);
     const double conv = 2.534; // Conversion factor from natural to useful units.
-    for(int x=0; x<L; x+=step) {
-      Eigen::Matrix3cd Hexp = -If*H/E*conv*x; // Temporary Hamiltonian to component-wise exponentiate.
-      for(int i=0; i<3; ++i) Hexp(i,i) = exp(Hexp(i,i));
-      result[x/step] = (U*Hexp*Ud*nu).cwiseAbs2();
+    for(int i=0; i<result.size(); ++i) {
+      Eigen::Matrix3cd Hexp = -If*H/op.E*conv*(i*step); // Temporary Hamiltonian to component-wise exponentiate.
+      for(int j=0; j<3; ++j) Hexp(j,j) = exp(Hexp(j,j));
+      result[i] = (U*Hexp*Ud*nu).cwiseAbs2();
     }
     return result;
   } // Oscillator::transvac()
 
   // Analytical neutrino oscillation in matter using Hamiltonian.
-  std::vector<Eigen::Vector3d> transmat(const int nu1, const double E, const double L, const double step = 10) const {
+  std::vector<Eigen::Vector3d> transmat() const {
     Eigen::Vector3cd nu(0,0,0);
-    nu(nu1) = 1;
-    std::vector<Eigen::Vector3d> result(L/step);
+    nu(op.nu) = 1;
+    const double numsteps = 1000;
+    const double step = op.L/numsteps;
+    std::vector<Eigen::Vector3d> result(numsteps);
     // Propagate.
     const double conv = 2.534; // Conversion factor from natural to useful units.
     const int N = 128; // Large enough N for Lie product formula.
-    for(int x=0; x<L; x+=step) {
-      Eigen::Matrix3cd Hexp = -If*H/E*conv*x/N; // Temporary Hamiltonian to component-wise exponentiate.
-      for(int i=0; i<3; ++i) Hexp(i,i) = exp(Hexp(i,i));
-      Eigen::Matrix3cd Vexp = -If*V*x/N; // Temporary matter potential to component-wise exponentiate.
-      for(int i=0; i<3; ++i) Vexp(i,i) = exp(Vexp(i,i));
+    for(int i=0; i<result.size(); ++i) {
+      Eigen::Matrix3cd Hexp = -If*H/op.E*conv*(i*step)/N; // Temporary Hamiltonian to component-wise exponentiate.
+      for(int j=0; j<3; ++j) Hexp(j,j) = exp(Hexp(j,j));
+      Eigen::Matrix3cd Vexp = -If*V*(i*step)/N; // Temporary matter potential to component-wise exponentiate.
+      for(int j=0; j<3; ++j) Vexp(j,j) = exp(Vexp(j,j));
       // Slow matrix power. Better than exponential...
       Eigen::MatrixPower<Eigen::Matrix3cd> Apow(Hexp*Ud*Vexp*U);
-      result[x/step] = (U*Apow(N)*Ud*nu).cwiseAbs2();
+      result[i] = (U*Apow(N)*Ud*nu).cwiseAbs2();
     }
     return result;
   } // Oscillator::transmat()

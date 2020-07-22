@@ -34,6 +34,8 @@ class ControlPanel {
     Slider Dm21sqslider(op.Dm21sq, "Delta_m_21^2.png");
     Slider Dm31sqslider(op.Dm31sq, "Delta_m_31^2.png");
     Slider rhoslider(op.rho, "rho.png");
+    Slider Lslider(op.L, "L.png");
+    Slider Eslider(op.E, "E.png");
 
     th12slider.setLimits(0, PI);
     th23slider.setLimits(0, PI);
@@ -42,6 +44,8 @@ class ControlPanel {
     Dm21sqslider.setLimits(0, 2.e-4);
     Dm31sqslider.setLimits(-5.e-3, 5.e-3);
     rhoslider.setLimits(0, 5000);
+    Lslider.setLimits(1, 24000);
+    Eslider.setLimits(0.5, 8);
 
     th12slider.setSnap(op.th12);
     th12slider.setSnap(PI/2);
@@ -56,8 +60,11 @@ class ControlPanel {
     Dm31sqslider.setSnap(0);
     Dm31sqslider.setSnap(-op.Dm31sq);
     rhoslider.setSnap(2700);
+    Lslider.setSnap(1300);
 
     rhoslider.setLoop(false);
+    Lslider.setLoop(false);
+    Eslider.setLoop(false);
     
     sliders.push_back(th12slider);
     sliders.push_back(th23slider);
@@ -66,6 +73,8 @@ class ControlPanel {
     sliders.push_back(Dm21sqslider);
     sliders.push_back(Dm31sqslider);
     sliders.push_back(rhoslider);
+    sliders.push_back(Lslider);
+    sliders.push_back(Eslider);
 
     updateWindow();
   }
@@ -74,6 +83,7 @@ class ControlPanel {
     for(Slider& slider : sliders) {
       slider.draw(window);
     }
+    if(animating) sliders[last_active].animate();
   }
 
   void updateWindow() {
@@ -87,6 +97,7 @@ class ControlPanel {
     for(int si = 0; si < sliders.size(); ++si) {
       sliders[si].setSize(size.x * 0.8, size.y / sliders.size());
       sliders[si].setPosition(pos.x + size.x/2 * 1.1, pos.y + (1+si)* size.y / (sliders.size()+1));
+      sliders[si].update();
     }
   }
 
@@ -134,10 +145,12 @@ class ControlPanel {
   }
 
   void animate() {
-    sliders[last_active].animate();
     animating = true;
   }
   void stopAnimate() {
     animating = false;
+  }
+  bool isAnimating() const {
+    return animating;
   }
 }; // class ControlPanel
