@@ -17,6 +17,7 @@ char sfKeyToChar(const sf::Keyboard::Key& key) {
     case sf::Keyboard::Num8: return '8';
     case sf::Keyboard::Num9: return '9';
     case sf::Keyboard::Period: return '.';
+    case sf::Keyboard::Z: return 'z';
     default: return '?';
   }
 }
@@ -167,9 +168,10 @@ class Slider {
 
     // Append number/period to string.
     if(editing) {
-      if((key >= sf::Keyboard::Num0 && key <= sf::Keyboard::Num9) || key == sf::Keyboard::Period) {
+      if((key >= sf::Keyboard::Num0 && key <= sf::Keyboard::Num9) ||
+          key == sf::Keyboard::Period) {
         editingstring.push_back(sfKeyToChar(key));
-      } else if(key == sf::Keyboard::Backspace) {
+      } else if(key == sf::Keyboard::BackSpace) {
         editingstring.pop_back();
       }
       text.setString(editingstring);
@@ -186,6 +188,13 @@ class Slider {
         newx = (val-min)/(max-min) * (maxx-minx) + minx;
       } else {
         newx = maxx;
+      }
+    } else if(val < min) {
+      if(loop) {
+        val += std::floor(val/(max-min))*(max-min);
+        newx = (val-min)/(max-min) * (maxx-minx) + minx;
+      } else {
+        newx = minx;
       }
     }
     slidercirc.setPosition(newx, slidercirc.getPosition().y);

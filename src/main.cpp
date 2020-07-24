@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
   window.requestFocus();
   sf::View view = window.getDefaultView();
   
-  // Create ternary graph and oscillator class instances.
+  // Create ternary graph, oscillator and control panel class instances.
   DrawUtil::TernaryGraph tgraph(window);
   tgraph.setPosition(window.getSize().x/4, 0);
   tgraph.setSize(window.getSize().x/4.*3, window.getSize().y);
@@ -78,13 +78,13 @@ int main(int argc, char *argv[]) {
           redraw = true;
         } else if(keycode == sf::Keyboard::L) {
           // Export probabilities as function of travel distance (with 10000 steps).
-          neutosc::exportData(neutosc::oscillate(osc, osc.pars().L, 10000), osc.pars().L);
+          neutosc::exportData(neutosc::oscillate(osc, osc.pars().L, 10000, true), osc.pars().L);
         } else if(keycode == sf::Keyboard::E) {
           // Export probabilities as function of energy (with 10000 steps).
-          neutosc::exportData(neutosc::oscillate(osc, osc.pars().E, 10000), osc.pars().E);
+          neutosc::exportData(neutosc::oscillate(osc, osc.pars().E, 10000, true), osc.pars().E);
         } else if(keycode == sf::Keyboard::X) {
           // Export probabilities as function of last active variable (with 10000 steps).
-          neutosc::exportData(neutosc::oscillate(osc, cp.lastActiveVar(), 10000), cp.lastActiveVar());
+          neutosc::exportData(neutosc::oscillate(osc, cp.lastActiveVar(), 10000, true), cp.lastActiveVar());
         } else if(keycode == sf::Keyboard::A) {
           // Toggle between neutrinos and antineutrinos.
           osc.pars().anti = !osc.pars().anti;
@@ -99,8 +99,8 @@ int main(int argc, char *argv[]) {
           cp.update();
           redraw = true;
         } else if((keycode >= sf::Keyboard::Num0 && keycode <= sf::Keyboard::Num9) ||
-                  keycode == sf::Keyboard::Period || keycode == sf::Keyboard::Enter ||
-                  keycode == sf::Keyboard::Backspace) {
+                  keycode == sf::Keyboard::Period || keycode == sf::Keyboard::Return ||
+                  keycode == sf::Keyboard::BackSpace) {
           cp.edit(keycode);
           redraw = true;
         }

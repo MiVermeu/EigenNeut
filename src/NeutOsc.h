@@ -125,31 +125,16 @@ class Oscillator {
     return (U*Apow(N)*Ud*nu).cwiseAbs2();
   } // Oscillator::transmat()
 
-  // Numeric expression for a range of neutrino oscillation probabilities.
-  // This function works great and has the exciting potential of making matter
-  // effects trivial to implement. However, the required step size is so small
-  // that any reasonable L makes it impossible to animate in a fun way...
-  std::vector<Eigen::Vector3d> numtrans(const int nu1, const double E,
-    const double L, const double step = 0.1) const {
-    std::vector<Eigen::Vector3d> result;
-
-    // Set local Hamiltonian with entered energy.
-    const double conv = 2.534; // Conversion factor from natural to useful units.
-  
-    // Transform initial neutrino to mass basis.
+  // Analytical neutrino oscillation in matter using Hamiltonian, using matrix exponential.
+  Eigen::Vector3d transmatexp() const {
     Eigen::Vector3cd nu(0,0,0);
-    nu(nu1) = 1;
-    nu = Ud*nu;
-
-    // Propagate and push flavour basis neutrino vector to result.
-    result.push_back((U*nu).cwiseAbs2());
-    for(double l = 0; l < L; l+=step) {
-      nu += -If*H*conv*step/E*nu;
-      result.push_back((U*nu).cwiseAbs2());
-    }
-
-    return result;
-  } // Oscillator::numtrans()
+    nu(op.nu) = 1;
+    // Propagate.
+    const double conv = 2.534; // Conversion factor from natural to useful units.
+    const Eigen::Matrix3cd Htmp = -If*H/op.E*conv*op.L; // Temporary Hamiltonian.
+    const Eigen::Matrix3cd Vtmp = -If*V*op.L; // Temporary matter potential.
+    return (U*(Htmp+Ud*Vtmp*U).exp()*Ud*nu).cwiseAbs2();
+  } // Oscillator::transmat()
 }; // class Oscillator
 
 // Function to export neutrino oscillation data to csv.
@@ -162,7 +147,7 @@ void exportData(const std::vector<Eigen::Vector3d>& probs, const double final) {
   }
 
   // Header.
-  ofile << "x,e,mu,tau\n";
+  ofile << "x,nue,numu,nutau\n";
   // Record probabilities as function of variable x, either E or L.
   for(double i = 0; i < probs.size(); ++i) {
     ofile << i*(final/probs.size()) << ',' << probs[i](0) << ',' << probs[i](1) << ',' << probs[i](2) << '\n';
@@ -171,7 +156,7 @@ void exportData(const std::vector<Eigen::Vector3d>& probs, const double final) {
 }
 
 // Function to obtain a range of neutrino oscillation probabilities vs a parameter.
-std::vector<Eigen::Vector3d> oscillate(neutosc::Oscillator& osc, double& par, int numsteps = 1000) {
+std::vector<Eigen::Vector3d> oscillate(neutosc::Oscillator& osc, double& par, int numsteps = 1000, bool using_exp = false) {
   const double initial = par;
   const double step = initial/numsteps;
   std::vector<Eigen::Vector3d> result(numsteps);
@@ -179,7 +164,7 @@ std::vector<Eigen::Vector3d> oscillate(neutosc::Oscillator& osc, double& par, in
   for(int i=0; i<result.size(); ++i) {
     par = i*step;
     osc.update();
-    result[i] = osc.trans();
+    result[i] = osc.pars().rho!=0 && using_exp? osc.transmatexp(): osc.trans();
   }
   // Reset to original parameter value to avoid rounding errors.
   par = initial;
