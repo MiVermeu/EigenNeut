@@ -95,9 +95,9 @@ class Slider {
     height = newheight;
     sliderline.setSize(sf::Vector2f(newwidth*0.7, 2));
     sliderline.setOrigin(sliderline.getGlobalBounds().width/2, sliderline.getGlobalBounds().height/2);
-    slidercirc.setRadius(sliderline.getLocalBounds().width*0.05);
+    slidercirc.setRadius(sliderline.getLocalBounds().width*0.04);
     slidercirc.setOrigin(slidercirc.getRadius(), slidercirc.getRadius());
-    labelsprite.setScale(width/5000, width/5000);
+    labelsprite.setScale(width/6000, width/6000);
     text.setCharacterSize(width/20);
   }
 

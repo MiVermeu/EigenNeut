@@ -1,6 +1,3 @@
-#define NOGDI
-#define GL_SILENCE_DEPRECATION
-
 #include <iostream>
 #include <fstream>
 #include <random>
@@ -18,39 +15,6 @@ typedef std::vector<Eigen::Vector3d> NuPath;
 static const int start_w = 1500;
 static const int start_h = 1000;
 static const bool start_fullscreen = false;
-static const int render_scale = 1;
-
-void exportData(const std::vector<Eigen::Vector3d>& probs, const double final) {
-  const std::string filename = "nu.csv";
-  std::ofstream ofile(filename);
-  if(!ofile.is_open()) {
-    std::cout << "Couldn't create file " << filename << ".\n";
-    return;
-  }
-
-  // Header.
-  ofile << "x,e,mu,tau\n";
-  // Record probabilities as function of variable x, either E or L.
-  for(double i = 0; i < probs.size(); ++i) {
-    ofile << i*(final/probs.size()) << ',' << probs[i](0) << ',' << probs[i](1) << ',' << probs[i](2) << '\n';
-  }
-  std::cout << "Saving to " << filename << ".\n";
-}
-
-std::vector<Eigen::Vector3d> oscillate(neutosc::Oscillator& osc, double& par, int numsteps = 1000) {
-  const double initial = par;
-  const double step = initial/numsteps;
-  std::vector<Eigen::Vector3d> result(numsteps);
-  // Propagate.
-  for(int i=0; i<result.size(); ++i) {
-    par = i*step;
-    osc.update();
-    result[i] = osc.trans();
-  }
-  // Reset to original parameter value to avoid rounding errors.
-  par = initial;
-  return result;
-}
 
 int main(int argc, char *argv[]) {
   //Get the screen size
@@ -72,13 +36,6 @@ int main(int argc, char *argv[]) {
   window.setFramerateLimit(60);
   window.requestFocus();
   sf::View view = window.getDefaultView();
-
-  //Setup OpenGL things
-  glHint(GL_POINT_SMOOTH, GL_NICEST);
-  glHint(GL_LINE_SMOOTH, GL_NICEST);
-  glEnable(GL_LINE_SMOOTH);
-  glEnable(GL_POINT_SMOOTH);
-  glEnable(GL_SMOOTH);
   
   // Create ternary graph and oscillator class instances.
   DrawUtil::TernaryGraph tgraph(window);
@@ -121,13 +78,13 @@ int main(int argc, char *argv[]) {
           redraw = true;
         } else if(keycode == sf::Keyboard::L) {
           // Export probabilities as function of travel distance (with 10000 steps).
-          exportData(oscillate(osc, osc.pars().L, 10000), osc.pars().L);
+          neutosc::exportData(neutosc::oscillate(osc, osc.pars().L, 10000), osc.pars().L);
         } else if(keycode == sf::Keyboard::E) {
           // Export probabilities as function of energy (with 10000 steps).
-          exportData(oscillate(osc, osc.pars().E, 10000), osc.pars().E);
+          neutosc::exportData(neutosc::oscillate(osc, osc.pars().E, 10000), osc.pars().E);
         } else if(keycode == sf::Keyboard::X) {
           // Export probabilities as function of last active variable (with 10000 steps).
-          exportData(oscillate(osc, cp.lastActiveVar(), 10000), cp.lastActiveVar());
+          neutosc::exportData(neutosc::oscillate(osc, cp.lastActiveVar(), 10000), cp.lastActiveVar());
         } else if(keycode == sf::Keyboard::A) {
           // Toggle between neutrinos and antineutrinos.
           osc.pars().anti = !osc.pars().anti;
@@ -163,8 +120,10 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    // Need to do this to prevent drawings from remaining on screen after frame.
-    glClear(GL_COLOR_BUFFER_BIT);
+    // Draw a black background.
+    sf::RectangleShape background(sf::Vector2f(window.getSize().x, window.getSize().y));
+    background.setFillColor(sf::Color::Black);
+    window.draw(background);
 
     // Handle mouse dragging.
     if(cp.drag(mouse_pos)) {
@@ -173,18 +132,17 @@ int main(int argc, char *argv[]) {
     // Draw control panel.
     cp.draw();
 
-    // If redrawing or animating, change the neutrino.
+    // If redrawing or animating, regenerate neutrino oscillation probabilities.
     if(redraw || cp.isAnimating()) {
       tgraph.clear();
-      osc.update(); // Update internal mixing matrix etc. from control panel.
-      tgraph.addDrawing(oscillate(osc, osc.pars().L, 1000));
+      osc.update(); // Update internal mixing matrix etc from control panel.
+      tgraph.addDrawing(neutosc::oscillate(osc, osc.pars().L, 1500));
       redraw = false;
     }
     tgraph.draw();
 
     //Flip the screen buffer
     window.display();
-    ++tgraph.t; // Advance graph time for initial drawing animation.
   }
 
   return 0;

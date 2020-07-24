@@ -152,6 +152,40 @@ class Oscillator {
   } // Oscillator::numtrans()
 }; // class Oscillator
 
+// Function to export neutrino oscillation data to csv.
+void exportData(const std::vector<Eigen::Vector3d>& probs, const double final) {
+  const std::string filename = "nu.csv";
+  std::ofstream ofile(filename);
+  if(!ofile.is_open()) {
+    std::cout << "Couldn't create file " << filename << ".\n";
+    return;
+  }
+
+  // Header.
+  ofile << "x,e,mu,tau\n";
+  // Record probabilities as function of variable x, either E or L.
+  for(double i = 0; i < probs.size(); ++i) {
+    ofile << i*(final/probs.size()) << ',' << probs[i](0) << ',' << probs[i](1) << ',' << probs[i](2) << '\n';
+  }
+  std::cout << "Saving to " << filename << ".\n";
+}
+
+// Function to obtain a range of neutrino oscillation probabilities vs a parameter.
+std::vector<Eigen::Vector3d> oscillate(neutosc::Oscillator& osc, double& par, int numsteps = 1000) {
+  const double initial = par;
+  const double step = initial/numsteps;
+  std::vector<Eigen::Vector3d> result(numsteps);
+  // Propagate.
+  for(int i=0; i<result.size(); ++i) {
+    par = i*step;
+    osc.update();
+    result[i] = osc.trans();
+  }
+  // Reset to original parameter value to avoid rounding errors.
+  par = initial;
+  return result;
+} // std::vector<Eigen::Vector3d> oscillate()
+
 } // namespace neutosc
 
 #endif

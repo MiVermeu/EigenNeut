@@ -3,10 +3,10 @@
 
 namespace DrawUtil {
 
-void Line(sf::RenderWindow& window, const sf::Vector2f& a, const sf::Vector2f& b, const double width) {
-  glLineWidth(width);
+void Line(sf::RenderWindow& window, const sf::Vector2f& a, const sf::Vector2f& b, const double thickness) {
   std::vector<sf::Vertex> vbuff = {a,b};
-  window.draw(vbuff.data(), vbuff.size(), sf::PrimitiveType::Lines);
+  std::vector<sf::Vertex> tribuff = TriStrip(vbuff, thickness);
+  window.draw(tribuff.data(), tribuff.size(), sf::PrimitiveType::TriangleStrip);
 }
 
 sf::Vector2f normalized(const sf::Vector2f a) {
@@ -23,7 +23,7 @@ sf::Vector2f miter(const sf::Vector2f& a, const sf::Vector2f& b, const sf::Vecto
 }
 
 // Function to convert point-to-point vertex arrays into triangle strips with thickness.
-std::vector<sf::Vertex> TernaryGraph::TriStrip(const std::vector<sf::Vertex>& drawing, const double thickness){
+std::vector<sf::Vertex> TriStrip(const std::vector<sf::Vertex>& drawing, const double thickness){
   std::vector<sf::Vertex> result(drawing.size()*2);
   for(int vi=1; vi<drawing.size()-1; ++vi) {
     // Three vertices form an angle around which to find miter points.
@@ -44,7 +44,7 @@ std::vector<sf::Vertex> TernaryGraph::TriStrip(const std::vector<sf::Vertex>& dr
   result[result.size()-2] = drawing[drawing.size()-1].position+lnorm;
   result[result.size()-1] = drawing[drawing.size()-1].position-lnorm;
   return result;
-} // TernaryGraph::TriStrip
+} // TriStrip
 
 TernaryGraph::TernaryGraph(sf::RenderWindow& window):
         triangle(100,3), tcentre(0,0), triangleR(0),
@@ -115,6 +115,8 @@ void TernaryGraph::draw() {
     window.draw(highlight.data()+start, numvtx, sf::PrimitiveType::TriangleStrip);
   }
 
+  // Advance graph time for initial drawing animation.
+  ++t;
 } // TernaryGraph::draw()
 
 void TernaryGraph::addDrawing(const std::vector<Eigen::Vector3d>& vec) {

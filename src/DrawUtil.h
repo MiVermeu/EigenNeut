@@ -14,6 +14,8 @@ void Line(sf::RenderWindow& window, const sf::Vector2f& a, const sf::Vector2f& b
 sf::Vector2f normalized(const sf::Vector2f a);
 sf::Vector2f normal(const sf::Vector2f& a, const sf::Vector2f& b);
 sf::Vector2f miter(const sf::Vector2f& a, const sf::Vector2f& b, const sf::Vector2f& c);
+// Function to convert point-to-point vertex arrays into triangle strips.
+std::vector<sf::Vertex> TriStrip(const std::vector<sf::Vertex>& drawing, const double thickness);
 
 class TernaryGraph {
   private:
@@ -61,9 +63,6 @@ class TernaryGraph {
   sf::Vector2f TriPoint(Eigen::Vector3d a) { return TriPoint(a(0),a(1),(2)); }
   // Function to transform from 2D ternary point to 3D probability vector.
   sf::Vector3f InvTriPoint(const sf::Vertex& a);
-
-  // Function to convert point-to-point vertex arrays into triangle strips.
-  std::vector<sf::Vertex> TriStrip(const std::vector<sf::Vertex>& drawing, const double thickness);
 
   // Set position (top left corner) and size (wxh) of ternary plot.
   void setPosition(const double x, const double y) {
