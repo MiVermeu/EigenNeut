@@ -10,7 +10,7 @@ void Line(sf::RenderWindow& window, const sf::Vector2f& a, const sf::Vector2f& b
 }
 
 sf::Vector2f normalized(const sf::Vector2f a) {
-  return a/sqrt(a.x*a.x + a.y*a.y);
+  return a/(float)sqrt(a.x*a.x + a.y*a.y);
 }
 
 sf::Vector2f normal(const sf::Vector2f& a, const sf::Vector2f& b) {
