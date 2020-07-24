@@ -22,51 +22,49 @@ sf::Vector2f miter(const sf::Vector2f& a, const sf::Vector2f& b, const sf::Vecto
   return normal(sf::Vector2f(0,0), tanl);
 }
 
+// Function to convert point-to-point vertex arrays into triangle strips with thickness.
+std::vector<sf::Vertex> TernaryGraph::TriStrip(const std::vector<sf::Vertex>& drawing, const double thickness){
+  std::vector<sf::Vertex> result(drawing.size()*2);
+  for(int vi=1; vi<drawing.size()-1; ++vi) {
+    // Three vertices form an angle around which to find miter points.
+    const sf::Vector2f ppos(drawing[vi-1].position);
+    const sf::Vector2f cpos(drawing[vi].position);
+    const sf::Vector2f npos(drawing[vi+1].position);
+    // Push miters into new vector.
+    const sf::Vector2f mit = miter(ppos, cpos, npos)*(float)thickness/2.f;
+    result[2*vi] = cpos+mit;
+    result[2*vi+1] = cpos-mit;
+  }
+  // First and last points.
+  const sf::Vector2f norm = normal(drawing[0].position, drawing[1].position)*(float)thickness/2.f;
+  result[0] = drawing[0].position+norm;
+  result[1] = drawing[0].position-norm;
+  const sf::Vector2f lnorm = normal(drawing[drawing.size()-2].position,
+                                    drawing[drawing.size()-1].position)*(float)thickness/2.f;
+  result[result.size()-2] = drawing[drawing.size()-1].position+lnorm;
+  result[result.size()-1] = drawing[drawing.size()-1].position-lnorm;
+  return result;
+} // TernaryGraph::TriStrip
+
 TernaryGraph::TernaryGraph(sf::RenderWindow& window):
         triangle(100,3), tcentre(0,0), triangleR(0),
         window(window),width(window.getSize().x), height(window.getSize().y),
         oldWindowSize(window.getSize()), centre(pos.x+width*0.5, pos.y+height*0.5) {
-  glLineWidth(10);
-  updateWindow();
-
   // Load textures.
   nulabeltex[0].loadFromFile("../textures/nu_e.png");
   nulabeltex[1].loadFromFile("../textures/nu_mu.png");
   nulabeltex[2].loadFromFile("../textures/nu_tau.png");
-  // Assign to sprites and set origin.
-  for(int nui = 0; nui < 3; ++nui) {
+  nulabeltex[3].loadFromFile("../textures/bar_nu_e.png");
+  nulabeltex[4].loadFromFile("../textures/bar_nu_mu.png");
+  nulabeltex[5].loadFromFile("../textures/bar_nu_tau.png");
+  // Assign textures to sprites and set origin.
+  for(int nui = 0; nui < 6; ++nui) {
     nulabelsprite[nui].setTexture(nulabeltex[nui]);
     nulabelsprite[nui].setOrigin(nulabelsprite[nui].getLocalBounds().width/2, nulabelsprite[nui].getLocalBounds().height/2);
   }
-
-  // Rotation transformations.
-  rot120.rotate(120, tcentre);
-  rot240.rotate(240, tcentre);
+  
+  updateWindow();
 } // TernaryGraph::TernaryGraph()
-
-  // Function to convert point-to-point vertex arrays into triangle strips with thickness.
-  std::vector<sf::Vertex> TernaryGraph::TriStrip(const std::vector<sf::Vertex>& drawing, const double thickness){
-    std::vector<sf::Vertex> result(drawing.size()*2);
-    for(int vi=1; vi<drawing.size()-1; ++vi) {
-      // Three vertices form an angle around which to find miter points.
-      const sf::Vector2f ppos(drawing[vi-1].position);
-      const sf::Vector2f cpos(drawing[vi].position);
-      const sf::Vector2f npos(drawing[vi+1].position);
-      // Push miters into new vector.
-      const sf::Vector2f mit = miter(ppos, cpos, npos)*(float)thickness/2.f;
-      result[2*vi] = cpos+mit;
-      result[2*vi+1] = cpos-mit;
-    }
-    // First and last points.
-    const sf::Vector2f norm = normal(drawing[0].position, drawing[1].position)*(float)thickness/2.f;
-    result[0] = drawing[0].position+norm;
-    result[1] = drawing[0].position-norm;
-    const sf::Vector2f lnorm = normal(drawing[drawing.size()-2].position,
-                                      drawing[drawing.size()-1].position)*(float)thickness/2.f;
-    result[result.size()-2] = drawing[drawing.size()-1].position+lnorm;
-    result[result.size()-1] = drawing[drawing.size()-1].position-lnorm;
-    return result;
-  } // TernaryGraph::TriStrip
 
 // Function to transform a 3D vector into a 2D location on the ternary plot.
 sf::Vector2f TernaryGraph::TriPoint(float e, float mu, float tau) {
@@ -102,9 +100,9 @@ void TernaryGraph::draw() {
   }
 
   // Draw labels.
-  window.draw(nulabelsprite[0]);
-  window.draw(nulabelsprite[1]);
-  window.draw(nulabelsprite[2]);
+  window.draw(nulabelsprite[0 + (int)anti*3]);
+  window.draw(nulabelsprite[1 + (int)anti*3]);
+  window.draw(nulabelsprite[2 + (int)anti*3]);
 
   // Draw all added drawings and their highlights.
   for(int di = 0; di < drawings.size(); ++di) {
@@ -152,12 +150,15 @@ void TernaryGraph::updateWindow() {
   tcentre = triangle.getPosition() + sf::Vector2f(0,triangleR*(1 - 1.5/2));
 
   // Set label scale and locations.
-  nulabelsprite[0].setScale(sideL/5000, sideL/5000);
-  nulabelsprite[1].setScale(sideL/5000, sideL/5000);
-  nulabelsprite[2].setScale(sideL/5000, sideL/5000);
+  for(sf::Sprite& sprite : nulabelsprite) {
+    sprite.setScale(sideL/5000, sideL/5000);
+  }
   nulabelsprite[0].setPosition(top - (right-left)*0.1f);
+  nulabelsprite[3].setPosition(top - (right-left)*0.1f);
   nulabelsprite[1].setPosition(right - (left-top)*0.1f);
+  nulabelsprite[4].setPosition(right - (left-top)*0.1f);
   nulabelsprite[2].setPosition(left - (top-right)*0.1f);
+  nulabelsprite[5].setPosition(left - (top-right)*0.1f);
 
   // Reset rotation transformations.
   rot120 = sf::Transform::Identity;

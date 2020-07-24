@@ -45,8 +45,9 @@ class TernaryGraph {
   std::vector<std::vector<sf::Vertex>> highlights;
 
   // Textures aand sprites for labels
-  sf::Texture nulabeltex[3];
-  sf::Sprite nulabelsprite[3];
+  sf::Texture nulabeltex[6];
+  sf::Sprite nulabelsprite[6];
+  bool anti = false; // Draw (anti)neutrino textures.
 
   public:
   // Animation time.
@@ -71,6 +72,9 @@ class TernaryGraph {
   void setSize(const double w, const double h) {
     width = w; height = h;
   }
+  
+  // Set antineutrino labels.
+  void setAnti(bool val) { anti = val; }
 
   // Draw everything in class.
   void draw();

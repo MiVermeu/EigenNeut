@@ -153,4 +153,8 @@ class ControlPanel {
   bool isAnimating() const {
     return animating;
   }
+
+  double& lastActiveVar() {
+    return sliders[last_active].getVal();
+  }
 }; // class ControlPanel

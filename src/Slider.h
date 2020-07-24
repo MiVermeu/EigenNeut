@@ -197,7 +197,7 @@ class Slider {
     update();
   }
 
-  double getVal() {
+  double& getVal() {
     return val;
   }
 }; // class Slider

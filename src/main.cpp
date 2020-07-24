@@ -20,6 +20,38 @@ static const int start_h = 1000;
 static const bool start_fullscreen = false;
 static const int render_scale = 1;
 
+void exportData(const std::vector<Eigen::Vector3d>& probs, const double final) {
+  const std::string filename = "nu.csv";
+  std::ofstream ofile(filename);
+  if(!ofile.is_open()) {
+    std::cout << "Couldn't create file " << filename << ".\n";
+    return;
+  }
+
+  // Header.
+  ofile << "x,e,mu,tau\n";
+  // Record probabilities as function of variable x, either E or L.
+  for(double i = 0; i < probs.size(); ++i) {
+    ofile << i*(final/probs.size()) << ',' << probs[i](0) << ',' << probs[i](1) << ',' << probs[i](2) << '\n';
+  }
+  std::cout << "Saving to " << filename << ".\n";
+}
+
+std::vector<Eigen::Vector3d> oscillate(neutosc::Oscillator& osc, double& par, int numsteps = 1000) {
+  const double initial = par;
+  const double step = initial/numsteps;
+  std::vector<Eigen::Vector3d> result(numsteps);
+  // Propagate.
+  for(int i=0; i<result.size(); ++i) {
+    par = i*step;
+    osc.update();
+    result[i] = osc.trans();
+  }
+  // Reset to original parameter value to avoid rounding errors.
+  par = initial;
+  return result;
+}
+
 int main(int argc, char *argv[]) {
   //Get the screen size
   sf::VideoMode screenSize = sf::VideoMode::getDesktopMode();
@@ -87,21 +119,28 @@ int main(int argc, char *argv[]) {
           osc.pars().nu -= 1;
           if(osc.pars().nu<0) osc.pars().nu += 3;
           redraw = true;
-        } else if(keycode == sf::Keyboard::S) {
-          // const std::string filename = "nu.csv";
-          // std::ofstream ofile(filename);
-          // if(!ofile.is_open()) {
-          //   std::cout << "Couldn't open file " << filename << ".\n";
-          //   return;
-          // }
-
-          // // Header.
-          // ofile << "L,e,mu,tau\n";
-          // // Record probabilities as function of L.
-          // for(double x = 0; x < L; x += step) {
-          //   ofile << x << ',' << 
-          // }
-          // std::cout << "Saving to " << filename << ".\n";
+        } else if(keycode == sf::Keyboard::L) {
+          // Export probabilities as function of travel distance (with 10000 steps).
+          exportData(oscillate(osc, osc.pars().L, 10000), osc.pars().L);
+        } else if(keycode == sf::Keyboard::E) {
+          // Export probabilities as function of energy (with 10000 steps).
+          exportData(oscillate(osc, osc.pars().E, 10000), osc.pars().E);
+        } else if(keycode == sf::Keyboard::X) {
+          // Export probabilities as function of last active variable (with 10000 steps).
+          exportData(oscillate(osc, cp.lastActiveVar(), 10000), cp.lastActiveVar());
+        } else if(keycode == sf::Keyboard::A) {
+          // Toggle between neutrinos and antineutrinos.
+          osc.pars().anti = !osc.pars().anti;
+          osc.update();
+          tgraph.setAnti(osc.pars().anti);
+          tgraph.updateWindow();
+          redraw = true;
+        } else if(keycode == sf::Keyboard::M) {
+          // Flip mass hierarchy
+          osc.pars().Dm31sq *= -1;
+          osc.update();
+          cp.update();
+          redraw = true;
         } else if((keycode >= sf::Keyboard::Num0 && keycode <= sf::Keyboard::Num9) ||
                   keycode == sf::Keyboard::Period || keycode == sf::Keyboard::Enter ||
                   keycode == sf::Keyboard::Backspace) {
@@ -138,7 +177,7 @@ int main(int argc, char *argv[]) {
     if(redraw || cp.isAnimating()) {
       tgraph.clear();
       osc.update(); // Update internal mixing matrix etc. from control panel.
-      tgraph.addDrawing(osc.trans());
+      tgraph.addDrawing(oscillate(osc, osc.pars().L, 1000));
       redraw = false;
     }
     tgraph.draw();

@@ -6,6 +6,9 @@ Make art using neutrino oscillations! Heavily based on HackerPoet's [**Conics**]
 * Space Bar - Animate last altered oscillation parameter.
 * Enter - Input custom value for last altered oscillation parameter.
 * Left/Right - Switch between electron, muon and tau neutrino.
+* e, l, x - Export oscillation probabilities to csv as a function of energy, length, or the last edited parameter.
+* a - Toggle between neutrino and antineutrino oscillation.
+* m - Toggle mass hierarchy.
 * Escape - Exit the app.
 
 ## Dependencies
