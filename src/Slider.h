@@ -151,11 +151,11 @@ class Slider {
 
   void edit(const sf::Keyboard::Key& key) {
     // Toggle editing on this slider.
-    if(key == sf::Keyboard::Enter && editing == false) {
+    if(key == sf::Keyboard::Return && editing == false) {
       editing = true;
       editingstring = "";
       text.setString("");
-    } else if(key == sf::Keyboard::Enter && editing == true) {
+    } else if(key == sf::Keyboard::Return && editing == true) {
       editing = false;
       try {
         val = std::stod(editingstring);
