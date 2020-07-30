@@ -79,12 +79,15 @@ int main(int argc, char *argv[]) {
         } else if(keycode == sf::Keyboard::L) {
           // Export probabilities as function of travel distance (with 10000 steps).
           neutosc::exportData(neutosc::oscillate(osc, osc.pars().L, 10000, true), osc.pars().L);
+          osc.pars().print();
         } else if(keycode == sf::Keyboard::E) {
           // Export probabilities as function of energy (with 10000 steps).
           neutosc::exportData(neutosc::oscillate(osc, osc.pars().E, 10000, true), osc.pars().E);
+          osc.pars().print();
         } else if(keycode == sf::Keyboard::X) {
           // Export probabilities as function of last active variable (with 10000 steps).
           neutosc::exportData(neutosc::oscillate(osc, cp.lastActiveVar(), 10000, true), cp.lastActiveVar());
+          osc.pars().print();
         } else if(keycode == sf::Keyboard::A) {
           // Toggle between neutrinos and antineutrinos.
           osc.pars().anti = !osc.pars().anti;

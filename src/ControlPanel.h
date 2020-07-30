@@ -59,8 +59,8 @@ class ControlPanel {
     Dm31sqslider.setSnap(op.Dm31sq);
     Dm31sqslider.setSnap(0);
     Dm31sqslider.setSnap(-op.Dm31sq);
-    rhoslider.setSnap(2700);
-    Lslider.setSnap(1300);
+    rhoslider.setSnap(2848.2); // Average DUNE density from DUNE TDR Vol. 2.
+    Lslider.setSnap(1284.9); // DUNE baseline from DUNE TDR Vol. 2.
 
     rhoslider.setLoop(false);
     Lslider.setLoop(false);

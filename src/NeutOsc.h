@@ -30,6 +30,32 @@ struct OscPars {
            Dm21sq == other.Dm21sq && Dm31sq == other.Dm31sq && dCP == other.dCP;
   }
   bool operator!=(OscPars& other) const { return !operator==(other); }
+
+  void print(const std::string pname = "nuparameters.csv") const {
+    std::ofstream ofile(pname);
+    if(!ofile.is_open()) {
+      std::cout << "Could not open file " << pname << ".\n";
+      return;
+    }
+
+    // Header.
+    ofile << "Parameter,Value\n";
+    // Parameters.
+    ofile << "Initial flavour," << nu << '\n'
+          << "Antineutrino [bool]," << (int)anti << '\n'
+          << "Energy [GeV]," << E << '\n'
+          << "Travel distance [km]," << L << '\n'
+          << "theta12 [rad]," << th12 << '\n'
+          << "theta23 [rad]," << th23 << '\n'
+          << "theta13 [rad]," << th13 << '\n'
+          << "Dm21sq [eV^2]," << Dm21sq << '\n'
+          << "Dm31sq [eV^2]," << Dm31sq << '\n'
+          << "dCP [rad]," << dCP << '\n'
+          << "Matter density [kg/m^3]," << rho << '\n';
+
+    std::cout << "Saving to " << pname << ".\n";
+    ofile.close();
+  }
 };
 
 class Oscillator {
@@ -95,8 +121,11 @@ class Oscillator {
   OscPars& pars() { return op; }
 
   // General transformation function that decides between vacuum and matter oscillation.
-  Eigen::Vector3d trans() const {
-    return op.rho==0? transvac(): transmat();
+  Eigen::Vector3d trans(bool using_exp = false) const {
+    if(op.rho==0) {
+      return transvac();
+    }
+    return using_exp? transmatexp(): transmat();
   } // Oscillator::trans()
 
   // Analytical determination of neutrino oscillation using Hamiltonian.
@@ -153,18 +182,19 @@ void exportData(const std::vector<Eigen::Vector3d>& probs, const double final) {
     ofile << i*(final/probs.size()) << ',' << probs[i](0) << ',' << probs[i](1) << ',' << probs[i](2) << '\n';
   }
   std::cout << "Saving to " << filename << ".\n";
+  ofile.close();
 }
 
 // Function to obtain a range of neutrino oscillation probabilities vs a parameter.
 std::vector<Eigen::Vector3d> oscillate(neutosc::Oscillator& osc, double& par, int numsteps = 1000, bool using_exp = false) {
   const double initial = par;
   const double step = initial/numsteps;
-  std::vector<Eigen::Vector3d> result(numsteps);
+  std::vector<Eigen::Vector3d> result(numsteps+1);
   // Propagate.
   for(int i=0; i<result.size(); ++i) {
     par = i*step;
     osc.update();
-    result[i] = osc.pars().rho!=0 && using_exp? osc.transmatexp(): osc.trans();
+    result[i] = osc.trans(using_exp);
   }
   // Reset to original parameter value to avoid rounding errors.
   par = initial;
